@@ -1,0 +1,13 @@
+all: llistTree
+
+llistTree: llist_tree.o llist_tree_main.o
+	gcc -o llistTree llist_tree.o llist_tree_main.o
+
+llist_tree.o: llist_tree.c llist_tree.h
+	gcc -Wall -Werror -c llist_tree.c
+
+llist_tree_main.o: llist_tree_main.c llist_tree.h
+	gcc -Wall -Werror -c llist_tree_main.c
+
+clean:
+	rm -f *.o llistTree

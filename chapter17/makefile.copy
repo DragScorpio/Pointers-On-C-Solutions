@@ -1,0 +1,16 @@
+all: arrBst
+
+arrBst: arr_bst.o arr_bst_main.o dma_queue.o
+	gcc -o arrBst arr_bst.o dma_queue.o arr_bst_main.o
+
+arr_bst_main.o: arr_bst_main.c arr_bst.h dma_queue.h
+	gcc -Wall -Werror -c arr_bst_main.c
+
+arr_bst.o: arr_bst.c arr_bst.h dma_queue.h
+	gcc -Wall -Werror -c arr_bst.c
+
+dma_queue.o: dma_queue.c dma_queue.h
+	gcc -Wall -Werror -c dma_queue.c
+
+clean:
+	rm -f *.o arrBst
