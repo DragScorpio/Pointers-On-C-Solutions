@@ -1,0 +1,3359 @@
+****chapter 1****
+1.preprocessor: interpret head files, #include<foo>, etc.
+
+2.procedure: a function whose return type is void. Usually referred so in other languages, like TCL.
+
+3.int aFunction(int const columns[]); #the const here promises that the aFunction does not modifies
+the caller's arguments.
+
+4.using a #include to access library functions help to avoid the maintenance problem caused by having
+multiple copies of same declarations.
+
+5.in C/C++, array arguments are passed as though they are passed by reference
+call by value:
+	any changes made by a function to a passed-by-value var are lost when function returns;
+call by reference:
+	any changes made by a function to a passed-by-reference var are permenantly modified;
+
+  /* read formatted data from stdin */
+6.int scanf(const char* format, ...)  // %s: string; %i: integer; %d: decimal-integer....
+eg: aString[5] = ...; scanf("%s", &aString[3]);
+
+7.there can be loops where evaluation is all we need, no further contents are needed within a loop:
+while((ch=getchar()) != EOF && ch != '/n')
+	;
+
+8. understand the following commands and library functions:
+getchar(), getc(), putchar(), putc(), printf(), scanf(), strcpy(), strncpy(), string.h, stdio.h,
+stdlib.h
+
+****chapter 2****
+1.
+source code ---> compiler ---> object code ---|
+source code ---> compiler ---> object code ---|
+.....					      |
+libraries ---> linker ---|		      |
+		    executable <-----linker----
+
+compiler consists of 3 stages:
+	1. preprocessor: #define, #include..
+	2. parse text into meaningful statements ---> object code
+	3. optimize object code to generate executable binaries (perhaps machine language, assembly..)
+
+2. compiling and linking
+	// to compile and link a single file (for GNU, gcc/g++, for Solaris, cc )
+	gcc program.c
+	// compile and link several files:
+	gcc main.c sort.c lookup.c
+	// compile one c-source file and link it with existing obj files:
+	gcc main.o lookup.o sort.c
+	// to simply compile:
+	gcc -c program.c
+	// to simply compile several:
+	gcc -c main.c sort.c lookup.c
+	// to link several and generate a exe:
+	gcc -o executable main.o sort.o lookup.o
+
+3. white space
+newline, space, tab, vertical tab, form feed
+
+4. identifiers (legal)
+upper/lowercase letters, digits, underscore; may not begin with digits.
+cannot be longer than 31 chars
+cannot be reserved keywords
+
+****chapter 3****
+Data type families
+1. integer family
+char: 0-127, 1 byte = 8 bits
+signed char: -127-127, 2 byte = 16 bits
+unsigned char: 0-255, 2 byte = 16 bits
+short int: 2 byte = 16 bits
+unsigned short int: 2 byte = 16 bits
+int
+unsigned int
+long int
+unsigned long int
+
+2. integer literal
+decimal: 123, 12, 99
+octal: 012, 0731
+hexadecimal: 0xff, 0x14af
+
+characters var are equivalent in the following ways:
+value = value - 48
+value = value - 060
+value = value - '0'
+
+3. enumerated type: values that are symbolic constants rather than literal:
+enum Jar_Type {cup, pint, quart, half_gallon, gallon};
+
+4. float point family:
+float
+double
+long double
+
+literals:
+3.1415926
+1E10
+.25
+
+5 Pointers !!!!!! this is the soul of our note
+each variable is stored in the computer's memory, and each memory is identified with an address, the
+pointer is just a name for that address.
+
+a pointer variable is a variable whose value is the address of some other memory location.
+
+6. string literals
+strings are usually stored in char arrays; a NUL was chosen as terminator of a char array (string) because
+it has no printable graphics associated with it.
+"hello", "\aWarning\a", ""
+
+**** a string literal can never be modified!!!****
+**** When  a  string  literal  appears  in  an expression, the value used in the expression is the address
+where its characters were  stored, not the characters themselves.****
+for example:
+char* stringPtr = "Hello, world!";
+// we can not modify stringPtr by: *(stringPtr+2) = 'X'; because the pointer stringPtr is read-only
+// on the other hand, we can assign the value of stringPtr to an array:
+char str[] = "Hello, world!";
+// we can say: str[2] = 'X'; thus we avoid modify string literal directly, but modifying an copy of it.
+
+7. declare variables
+int values[20];
+int *a;
+int *b, *c, *d; // note, the aterisk is part of the expression, not the identifier; thus we cannot say:
+// int* b, c, d; we must say: int *b, *d, *c;
+
+// the declaration:
+char *msg = "hello, world";
+// is equivalent to:
+char *msg;
+msg = "hello, world"; // which assign the address of the first char of a string literal to the ptr msg!
+
+8. typedef
+typedef type typename  // for example:
+typedef char *ptr_to_char;
+// this statement define the ptr_to_char to be a pointer that points to a char type:
+// ptr_to_char a;
+// is equal to:
+// char *a;
+
+defination for one types can also be achieved by #define:
+#define d_ptr_to_char *char
+d_ptr_to_char a;
+
+// defination for multiple types can only be achieved by typedefine:
+typedef char *ptr_to_char;
+ptr_to_char a, b, c;
+
+9. constant!!!
+// pointer to a constant integer value; the value is constant, but the pointer is modifiable
+int const *pci;
+
+// constant pointer to an integer value; the pointer is constant, but the value is modifiable
+int *const cpi;
+
+// everything is constant:
+int const *const cpci;
+
+///// ok, so far, we've learned how to translate these patterns:
+	type *var:            means that *var ==== type, if dereference var is type, then var is a pointer to type
+i.e., var ===== type*; eg: int *a; ------> *a == (int), a == (int*);, or, &*a == a == &(int), a has the address of int 
+eg: int const *pci; -----> *pci == (int const), or 
+eg: (const int), then pci is a pointer to (const int)
+eg: on the other hand: int *const cpi;-------> *(const cpi) == int, then const cpi = &(int)-->thus, cpi's value is
+    an address of integer var, and cpi is constant!!!
+/////////////////
+
+10. block scope
+int f;
+int g( int h ) {
+	int f, g, i;
+}
+
+// variables declared in each block are inaccessible from other blocks
+// if an identifier in nested block has the same name as one in any outer block, like the "f" here,
+then the inner defination hides out the outer one, namely, the variable in the outer block cannot be
+referenced by name from inner block.
+
+11. file scope
+int a;
+int b(int c) {
+
+}
+// here, a, b, have file scope
+
+12. prototype scope
+like function defination's parameter lists... name does not matter
+
+13. function scope
+used in "goto" statement; all statement labels in a function must be unique
+
+14. linkage
+usually, an external source file can #include this source file to have access to its functions and vars,
+however, if we add keyword: static, then they become private:
+static int i;
+static int func() {
+
+}
+
+// when declared inside scope, the keyword static has different meaning:
+// the static variable will not be created or destroyed every time execution enters and leaves a block:
+{
+	static int data;
+}
+
+// all in all, look at the comprehensive example in page 62.!!!!!!
+
+15. storage
+1)memory
+2)runtime stack
+3)hardware registers
+
+****chapter 4****
+1. empty statement:
+;
+
+2. assignment statement:
+ch = getchar();
+
+3. if statement:
+
+if( expression )
+	statement
+else
+	statement
+// alternatively,
+(expression) ? (conditionA) : (conditionB);
+
+// the expression can be any expression that result in integer value; 0 means faulse, any non-zero means
+// true; because C doesn't have a boolean type;
+
+4. while statement
+while( expression )
+	statement
+
+5. ***** break, and continue ******
+break, and continue, are used in while loop. "break", when used, will terminate the innerest loop and jump
+to the next statement after the innerest loop
+
+"continue", when used, will terminate the current loop and re-evaluate the expression immediately;
+
+6. for statement
+for( expressions1; expressions2; expressions3 )
+	statement
+
+// break and continue will also work in for loop
+
+7. do statement
+do
+	statement
+while( expression );
+
+8. switch statement
+switch( expression ) {
+case constant_expression:
+	statement
+	break;
+...
+
+default:
+	statement
+}
+
+/* without the break, executions will flow through the case labels one by one. when the expression value
+does not match any of the case constant expression, the execution flows through the default case
+
+// for an example, a program counts the number of chars:
+switch( ch ) {
+case '\n':
+	lines += 1;
+case ' ':
+case '\t':
+	words += 1;
+default:
+	chars += 1;
+}
+
+9. exit program and terminate: ( #include <stdlib.h> )
+void exit( int status );
+// Terminates the process normally, performing the regular cleanup for terminating programs
+// status code:
+// 0, or, EXIT_SUCCESS
+// EXIT_FAILURE
+// so, sometime, when you return main(), you can just: return EXIT_SUCCESS instead of return 0;
+
+
+****chapter 5****
+1. arithmetic
++ - * / %
+
+2. shift
+right shift: >> /left shift: <<
+logic shift / arithmetic shift
+
+3. bitwise
+bitwise operators perform AND, OR, XOR, on individual bits
+suppose a = 00101110, b = 01011011, then
+a & b = 00001010,
+a | b = 01111111,
+a ^ b = 01110101
+
+// another example, setting the specified bit to one:
+value = value | (1 << bit_number);
+
+// to test the specified bit to be 0 or not, lets:
+value & (1 << bit_number);
+// if the result is non-zero, then the specified bit is all-set
+
+4. assignment!!!!
+* first of all, assignment "=", is an expression not an statement, meaning it has a return value:
+*ch = getchar( str ); // has return value 0, so we can use in this way:
+while( *ch = getchar( str ) ) {
+...
+}  // this loop will stop when the str gives us a '\0', alternatively, a 0.
+
+always we can concatecate assignemnt:
+a = x = y + 3;
+
+4.1 compound assignment:
++=, -=, *=, /=, %=, <<=, >>=, &=, ^=, |=  ...
+// one's complement:
+~ x;
+// this operator ~ will flip all the 1's to 0 and vice versa. the negative value of x should be:
+~x + 1;
+
+*****sizeof()******
+sizeof( );
+// is an operator, it returns the size of its operand in bytes
+// ATTENSION: if we pass a pointer char *a to function, and inside the function we do: sizeof( a ), the result
+// will only be the size of an address var: 4 * 8bytes, (32)== a word, it will not show the overall size of the 
+// array which is pointed to by a!!! Similarly, when you create an array inside a function, like:
+// char *foo( ) {
+	char array[10];  // then you initialize the array...
+	...
+	return array;
+}
+// tell you the truth, when you access array member, they just disappeared!!! because the array elements are thrown
+// out with the runtime stack when function returns, what you have is just a pointer var: array!, not its element,
+// not the following addresses in the array and their elements either!!
+
+
+unary:
+// pay attention:
+int a = 10, b = 20;
+c = ++a; // c = 11, a = 11
+d = b++; // d = 20, b = 21;
+//The  prefix  operator  increments  before  making  this  copy,  and  the  postfix  operator  increments
+// after  making  the  copy
+
+5. relational
+>, <, >=, <=, ==, !=
+// these operators produce integer, not boolean, result!! either 1 or 0;
+
+6. logical operators
+&&, ||, !
+// short circuited evaluation: first evaluate its left-side, then right side if still necessary
+// namely, eg: a && b, if a is false, there is no need to see b!
+
+7. conditional!!!
+expression1 ? expression2 : expression3;
+
+8. comma
+// the comma operator just seprates two or more expresions, like:
+expression1, expression2, expression3,...
+
+9. subscription
+// eg,
+array[ subscript ]
+*( array + ( subscript ) )
+
+10. . operator, -> operator
+1) if s is a structure or in C++ an object
+s.a // access the member of that structure
+
+2) if s is a pointer to a structure
+s->a // access.....
+
+11. boolean
+rule:
+Zero is false, and any nonzero value is true
+
+12. L-value and R-value !!!!!!!!!!!!!!!!
+an L-value is something that can appear on the left side of an equal sign; it identifies a place where
+a result can be stored;
+
+a R-value is someting that can appear on the right side of an equal sign; it designate a value;
+literal constants can never be L-value;
+
+L-value can be expression:
+a[b + 10] = 0;
+*pi = 20;
+// in these two examples, we have both addresses stored in a + b + 10, and pi, so that we can identify
+// the place to store variable.
+// ATTENTION: in a word: only ADDRESSABLE var can be L-VALUE!!!
+
+
+****chapter 6**** ( POINTERS !! )
+1. memory, address
+computer memories are like houses on a long street, each house holds data in it and has address to refer
+as: house number
+
+usually, each "house" is as large as a byte (8 bits), and is identified with a house number, like '101';
+so we can see that in this case, each house has value 0 - 255, or, -128 - 127;
+
+sometimes, we need even larger house to accommodate values; then two bytes to 4 bytes, referring to a 'word'
+so we can see in that case, the "house" can store much larger value than the previous one.
+
+it is so cumbersome to refer to the value in an address everytime by giving the exact address, so we may, as
+human not machine, access these address and associated contents by naming a variable to it: var
+
+2. values and their types
+the type of a value is not symply determined by its bits. Suppose a 32-bits data, it could be used as a:
+int,
+2 short int
+4 chars
+......
+so, it depends on where the value is used. for example, it is used in an int formula, it is "int"
+
+3. contens of a pointer variable
+is the address of some other variable, like:
+int *d = &a;
+
+4. indirection operator
+indirection: dereferencing pointers
+int *d = &a;
+*d, represents the value of a; d is of type: int*
+*d is of type int----->&(*d) == d == &int 
+
+5. uninitialized and illegal pointer !!! (mostly, segamentation fault! )
+/* a very famous SEGMENTATION FAULT!!! */
+int* a;
+*a = 12;
+/* the pointer a was not initialized! where does it point to? let alone give it value 12 */
+/* in other words, where is value 12 stored? */
+namely, accessing to a memory that is not existed or out of boundary, is not allowed
+
+If  the  variable  is  static,  it  is  initialized  to  zero;  but if the variable is automatic, it is 
+not initialized at all
+// here, the pointer a is automatic and it is not initialized at all;
+
+Be  extremely  careful  that  pointer  variables  are  initialized before applying indirection to them!!!!!!!
+
+6. the NULL pointer
+NULL pointer as a pointer value that does not point to anything  at all.
+it  is  illegal  to  dereference  a  NULL  pointer
+so, to avoid error report and help enhance maintainance, we'd better:
+explicitly  initialize  all  your  pointer  variables.  Use  the  desired  address  if  it  is  known,
+otherwise initialize  them  to  NULL.
+
+7. pointers, indirection, and L-value
+suppose we have:
+int a = 10;
+int* d = &a;
+
+// then, a, d, *d can all be used as L-values:
+*d = 10 - *d;  // *d: L-value, R-value
+
+8. Pointers, indirection, and variables
+// give you this!
+*&a = 25;  // what does this mean?
+// answer: assigning 25 to variable a;
+
+9. pointer constants
+// suppose we want to store 25 to location 100
+*100 = 25; // we cannot do this, because 100 is an integer constant, not a pointer/address variable
+// probably:
+* (int *)100 = 25; // casting 100 from int to int* first;
+
+10. pointers to pointers !!! (challenging)
+// suppose we have:
+int a = 12; // a --> int
+int* b = &a; // b --> int*; *b --> int
+type c = &b; // what does this mean? it means c is a pointer to a integer pointer type, namely: int**
+
+so on so forth, we can have, sometimes, triple, fourtimes ... aterisks/pointers
+
+11. pointer expressions !!!!!!
+// given example:
+char ch = 'a';
+char* cp = &ch;
+
+expression	L-value		R-value		comments
+&ch		no		yes	     no indication of where &ch is stored(no way to access it), so not L-value
+cp		yes		yes
+&cp		no		yes	     it canbe R-value because its value is the address of cp, which is there
+					     it is not L-value because we don't know the location of &cp is unidentifble
+*cp		yes		yes	     *cp is stored at cp; *cp 's value is ch == 'a';
+*cp + 1		no		yes
+*(cp + 1)	yes		yes
+cp + 1		no		yes	     cp is identifiable, because it is already initialized; cp + 1, namely the
+					     memory location right after cp, is actually not identifialbe.
+similarly,
+++cp		no		yes
+cp++		no		yes
+/* note, ++cp, it first make a copy of cp, then assign cp+1 to this copy and cp itself; however, cp++, it make a copy
+of cp first, and then assign cp+1 only to cp itself, not to the copy; 
+anyway, the return value of assign-operator =, is always the COPY!!!!! */
+so I want so say, in either case, the return value, which is the copy, has always an unidentifiable location!
+
+even if in this example:
+char array[10];
+char* a = array;
+// let's analyze these:
+a + 1 /* it can be R-value, because a + 1 has a value which is exacly (array + 1); however it is not L-value, because
+	 let, supposely, a1 = a + 1, we know a1 refers to (array + 1), but a1 itself is not in an identifialbe location
+	 anyway, through a + 1, we can dereference it to access array[1], but we cannot use it as an L-value;
+
+// then,
+*++cp		yes		yes
+*cp++		yes		yes
+// page 146
+++*cp		no		yes
+(*cp)++		no		yes
+++*++cp		no		yes	// reminder: ++*++cp returns the copy of a value that the position that next
+++*cp++		no		yes	// to the memory of *cp holds; we do cannot identify the address of that copy
+
+/* an address that is not identifiable means that we cannot refer/deduce this address by any information that we have */
+/* last, I wanna say: ++/-- has higher precedence than *; others, we obey right to left rule;
+
+6.12 examples that enhance comprehension:
+(starting page 148)
+
+/* the following program is standard definition for strlen() */
+#include <stdlib.h>
+size_t strlen( char* string ) {
+	int length = 0;
+	while( *string++ != '\0' )
+		length += 1;
+
+	return length;
+}
+// string++, gives the address of the char next to the char that string points to now, but make a copy of string first
+// before increment; then dereference the return value of string++, which is the copy we just talked about, gives us
+// the value that is stored in the address; meanwhile, string moves by 1, pointing to the next char. Perfect!!!
+
+/* let's see another example, find_char */
+#include <stdio.h>
+
+int find_char( char** strings, char value ) {
+	char* string;
+	while( ( string = *strings++ ) != NULL ) {
+		while( *string != 0 ) {
+			if( *string++ == value )
+				return 1;
+		}
+	}
+	return 0;
+}
+// but, as you know, we utilized operators like ++, =, which means we made copies of strings and string multiple times
+// to avoid this, we can write this program in the following way:
+
+#include <stdio.h>
+#include <assert.h>
+int find_char( char** strings, char value ) {
+	assert( strings != NULL );
+	while( *strings != NULL ) {
+		while( **strings != '\0' ) {
+			if( *(*strings)++ == value )
+				return 1;
+		}
+		strings++;
+	}
+	return 0;
+}
+
+6.13 pointer arithmetic
+// only two forms:
+pointer + integer;
+pointer - integer;
+//Rule:
+Elements  in  an  array  are  stored  in  consecutive  memory  locations,  and  the  later  elements have larger
+addresses than the earlier ones
+// translation: (suppose, firstly, type *cp = type p[10];
+p + 4 // means that p + 4 * sizeof( type ); where type represents a certain type, eg. int, char, float, double...
+
+// let's see an example:
+float values[5];
+float* vp;
+for( vp = values; vp < values + 5; )
+	*vp++ = 0;
+
+// the third type, if there is any:
+pointer - pointer;
+// example:
+float array[10];
+float p1 = &array[1];
+float p2 = &array[6];
+// then,
+p2 - p1 == 5  // because sizeof(float) == 4; 6 * 4 - 1 * 4 = 20; 20/4 = 5;
+// on the other hand, p1 - p2 == -5
+// scaling makes the result independent of the data s type
+// The  result  of  subtracting  two  pointers  that  do  not  point  to  the  same  array  is  undefined
+
+6.14 relational operations
+/* same rule here, it is possible to compare two pointers if and only if they both points to the elements of same
+array */
+/* the comparison will tell you which pointer comes first, and which thus comes latter */
+// eg. these two "for loops" does the same 
+for( vp = &values[N_VALUES]; vp > &values[0]; )
+	*--vp = 0;
+
+// and
+for( vp = &values[N_VALUES - 1]; vp >= &values[0]; vp-- )
+	*vp = 0;
+/*!!!!!!!!! but the second for loop is not guaranteed successful on some of the machine,because:
+The Standard allows for a comparison with a pointer that points  just  beyond  the  right  side  of  an  array,
+but  not  for  one  that  points  just  beyond  the  left  side.
+and the second loop, on termination, will involve comparing a pointer that is just left to the first pointer of 
+array "values" */
+
+/* summary */
+01. The  value  of  a  pointer  variable  is  not  the  value  to  which  it  points.  Indirection 
+must be applied to a pointer to obtain the value that it points to
+
+02. Declaring  pointer  variable  does  not  automatically  allocate  any  memory  in  which  to  store  values.
+Before indirection  can  be  performed  on  the  pointer,  it  must  be  initialized  co  point  either  to  existing
+memory or to dynamically allocated  memory.
+
+03. It is illegal (but  often  not  detected)  to  perform  arithmetic  on  any  pointer  that  does  not  point 
+to an element of an array
+
+****chapter 7**** Functions
+1. function definition
+defination: function body
+declaration: compiler calls
+
+type name( parameter-list ) {
+	body
+}
+
+2. return statement
+when execution reaches the end of the function definition, the RETURN statement allows you to go back from ANYWHERE
+to where to function was called!
+
+it is of course optional if the function is void;
+
+3. prototypes
+there are 2 ways to give specific info about a function in a progra,:
+01. give the definition of a function in detail in front of where it will be called later.
+02. give the function prototype in the beginning:
+The  most  convenient  (and  safest) way to use a prototype is to put it in a separate file and then #include that file
+wherever it is needed
+
+note, the var names are optional, but are meaningful
+char *strcpy( char *, char * );
+char *strcpy( char *destination, char *source );
+
+// function without parameter lists:
+int* func( void ); // make sure void presents to avoid ambiguity
+
+4. default function assumptions
+5. function arguments !!!!!
+All arguments to C functions are universally passed with one technique:
+	PASS BY VALUE;
+meaning, the function gets a copy of the argument, not the original argument!
+
+However, sometimes, we may use tricks to PASS BY REFERENCE:
+	eg, pass char* string to a function, although we actually passed a copy of the pointer string, we can actually
+access/modify the element that string points to in the function body;
+	same rule applies to array arguments, like char array[]
+
+/* explanation: when we pass char array[] to a function, we actually passed a copy of the pointer that points to the
+first element of the array, *array, to that funtion; so, the subscript array[5], like indirection *(array + 5), is just
+used to access/modify the element in that array: all in all, we are always manipulating PASS BY VALUE all the time, yet
+sometimes it just gives us an illusion of PASS BY REFERENCE */
+
+// such is why we define a "swap" function, we don't pass by value, we pass by reference:
+void swap( int* a, int* b ) {
+	int temp = *a;
+	*a = *b;
+	*b = temp;
+}
+
+6. ADTs
+**abstract data types/black boxes
+// sometimes, we don't wanna reveal or give access to others the information of some data; we use ADT here:
+// headfile:
+#define     NAME_LENGTH 30           /* longest name allowed */
+#define     ADDR_LENGTH 100          /* longest address allowed */
+#define     PHONE_LENGTH      11     /* longest phone # allowed */
+#define     MAX_ADDRESSES     1000   /* # of addresses allowed */
+/*
+** Interface functions
+**
+**    Given a name, find the corresponding address.
+*/
+char const *
+lookup_address( char const *name );
+/*
+**    Given a name, find the corresponding phone number.
+*/
+char const *
+lookup_phone( char const *name );
+
+
+// implementation file:,note, "static" have retrained accessbility to this file only!
+#include "addrlist.h"
+#include <stdio.h>
+
+static char  name[MAX_ADDRESSES][NAME_LENGTH];
+static char  address[MAX_ADDRESSES][ADDR_LENGTH];
+static char  phone[MAX_ADDRESSES][PHONE_LENGTH];
+
+static int
+find_entry( char const *name_to_find )
+{
+int entry;
+      for( entry = 0; entry < MAX_ADDRESSES; entry += 1 )
+            if( strcmp( name_to_find, name[ entry ] ) == 0 )
+                  return entry;
+
+      return -1;
+}
+
+char const *
+lookup_address( char const *name )
+{
+int entry;
+entry = find_entry( name );
+if( entry == -1 )
+      return NULL;
+else
+      return address[ entry ];
+}
+
+char const *
+lookup_phone( char const *name )
+{
+}
+int entry;
+entry = find_entry( name );
+if( entry == -1 )
+      return NULL;
+else
+      return phone[ entry ];
+
+7. Recusion !!!!
+eg, fibonacci, factorial
+// not 100% efficient and advantage
+01. must  a  recursive  function  get  closer  to  a  limiting  case  with each recursive call
+02. The limiting case is the one in which the function does not call  itself
+like,
+int Fib( unsigned int n ) {
+	if( n == 1 )
+		return 1;
+	else if( n == 2 )
+		return 1;
+	else
+		return Fib( n-1 ) + Fib( n-2 );
+}
+
+int factorial( unsigned int n ) {
+	if( n == 0 )
+		return 1;
+	else if( n == 1 )
+		return 1;
+	else
+		return n * factorial( n - 1 );
+}
+
+/* in each case, we have called the function itself but also get closer to a lower limit; while reaching the limit,
+** we have base case like n == 1, n == 2 to give the value
+*/
+8. tracking a recursion to understand program
+/* when a function is called, space for its variables is created on RUNTIME STACK( FILO ); the variables belonging to
+** the previous calls/functions remain on the stack, but they are covered up (put one layer lower on the stack) by the
+** new ones and are inaccessible, with  the  set  of  variables  currently  being  accessed  on  the  top  of  the  
+** stack
+*/
+the recursive calls work in the same way: with the previous var sets being created on the stack and hidden, which will
+remain inaccessible until THIS recursive call returns
+
+so, when the base-case function returns, the runtime stack will remove all values from it: first comes last out;
+
+****chapter 8****ARRAYS
+1. one-dimensional array
+int b[10];
+/* what is b? It is a int *const variable, the value of which, is a POINTER CONSTANT (R-VALUE) that is the address of
+its first element */
+
+type* const ptr;  // a constant ptr to a "type", such is the array
+
+Note that  this  value  is  a  pointer  constant  as  opposed  to  a  pointer  variable;  you  cannot  change  the
+value  of  a  constant; In other words, you CANNOT make b points to another place!!
+
+the following two statement acts in the same way:
+int* c;
+int a[10];
+int b[10];
+c = &a[0]; // is exactly: c = a; BUT NEVER DO THIS: a = c;
+// neither can you do this: b = a or a = b; you must copy each element using a loop;
+// anyway, a and b are constant pointers, namely, int* const type;
+
+2. subscript
+// remember,
+array[subscript] // is the very same as:
+*(array + subscript)
+// we know, array is R-value only, but *(array + subscript) is buth R- and L- value!!!
+
+/* now, here comes a very important instance: */
+int array[10];
+int* ap = array + 2;
+
+// ap + 6:  equivalent to &array[8]
+// ap[3]:   ***** equivalent to array[5]; you may say ap is a pointer, we cannot do subscript, it is "illegal"? NO!!!
+// this is LEGAL because in C/C++, subscript/[] is exactly the same as indirection *  !!!!!
+
+// ap[-1]:  how about this? confused? No, try to think in this way: *(ap - 1); everything's clear now
+// ap[9]:  out of range at first glance; because it is equal to array[11], which will return a random value
+
+3. pointers vs subscrips
+pointer accesses are more efficient than subscript ones:
+//////////////////////////
+int array[10], i;
+for( i = 0; i < 10; i++ )
+	array[i] = 0;
+
+//////////////////////////
+int array[10], *ap;
+for( ap = array; ap < array + 10; ap ++ )
+	*ap = 0;
+//////////////////////////
+/* the second one is faster!!! */
+
+4. difference between pointer and array:
+int a[5];
+int* b;
+/* I ask: what's the difference between a, and b? */
+01. Similarity:
+	1.both a and b have pointer values, meaning, these vars have the same type of value: int*
+	2.both a and b can use indirection or subscript: a[0], *a, b[1], *(b + 1);
+02. Differences:
+	1.a is int* const type, while b is int* type;
+	2.when a[5] is declared, a 5-consecutive-spaces of int type is automatically created in memory, while b not.
+	3.after declared, we can access *a, but we cannot access *b (segmentation fault) unless b is initialized;
+
+5. array neames as function arguments
+int array[10];
+when, array, is passed into a function, the copy of array, copy_array is passed in to function body, and indirection
+still affects the value of array elements;
+// example:
+void strcpy( char* buffer, char const* string ) {
+	while( ( *buffer++ = *string++ ) != 0 )
+		;
+}
+
+6. declare array parameters !!
+// usually, when we want to pass an array to a function, we can just pass the pointer pointing to its first element:
+int strlen( char* string );
+// however,ANSI-C makes things easier to novice by adding this feature:
+int strlen( char string[] );
+// they are equivalent in this context;
+// that's is why dimension is not passed in the argument --- space is not allocated at all! just like a pointer var
+
+7. initialization
+int vector[5] = {10, 20, 30, 40, 50}; // we allow incomplete init: int vector[5] = {1,2};
+char array[5] = "abcd";
+
+8. automatic array sizing
+** if the array size is missing, the compiler makes the array JUST BIG enough to hold the data: **
+int vector[] = {1,2,3,4,5,6};
+// particularly, for cstring, we can even do this for pointer: char* ptr = "hello, world1";
+
+9. char array initialization
+01. char message[] = {'h', 'e', 'l', 'l', 'o', 0 }  // 0 represents for '\0'
+// isn't this cumbersome? let's do:
+02 char message[] = "hello"   // automatically append '\0' to the end! or just:
+03 char* ptr = "hello";
+
+// I ask, why don't you think message[] is a string literal, after all it points to a string literal???????
+// BECAUSE the **INITIALIZER** works in different way: 
+	01. for message[], the initializer just copied each char of string literal to message[]'s element; so,
+each elemet is modifiable; ( but the pointer "message" is constant, cannot re-direct to other places!!! )
+	02. for ptr, the initializer just direct it to a string literal!!! So, IT IS A string literal!!!!! (but,
+as we mentioned before, we can re-direct it to other places because ptr is NOT CONSTANT, but VARIANT!!!)
+
+10 **** key topic***** ------> multi-dimensional array
+int matrix[6][10];
+
+// I ask: is this a 6 rows of 10 elements? or 6 columns of 10 elements whatsoever??
+// no so concisely, but in actual:
+int a;  // a scalar
+int b[10];  // an array of 10 integers
+int c[6][10]; // an array of 6 elements, each of which is an array of 10 elements;
+int d[3][6][10]; // an array of 3 arrays of 6 arrays of 10 integers.... and so on....
+
+the order of storage is always defined in Standard C; but, we can choose any interpretion to explain the matrix:
+I prefer, the first subscript--->row number, the second subscript--->column number;
+so the standard order is like:
+int array[3][6]:
+|    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |
+ 0,0  0,1  0,2  0,3  0,4  0,5  1,0  1,1  1,2  1,3  1,4  1,5  2,0  2,1  2,2  2,3  2,4  2,5
+
+// which is always an array of sub1*sub2*sub3*.... elements of type TYPE;
+// everytime, it fills the right-most subscript first, when it's full, it moves the subscript left by 1 each round;
+
+11.**** array names****
+int matrix[3][10];
+// I ask: what does pointer "matrix" represent for?
+
+matrix, is a pointer to int array type; it's like: !!!!!! matrix is a && type, it's value is the address of the pointer
+that points to the first element of the first row; so matrix is of (int **) type!!!!
+ matrix
+ _______		0 1 2 3 4 5 6 7 8 9
+|    ___|_______        ___________________   
+|_______|       \--->0 |___________________|
+		     1 |___________________|
+		     2 |___________________|
+so, it points a the first "row" of 10-element-array;
+how about:
+	matrix + 1     // of course, second row of array;
+then, how about *(matrix + 2)?????
+in other words, matrix[2]????   ----> it is a constant pointer to the first element of the 3rd array of 10-element:
+what is the type of *(matrix + 2)???? -----> int* const
+
+**** what about *(matrix + 2) + 5???  ----> int* const ptr to element matrix[2][5];
+
+**** what about *( *(matrix + 1) + 5)??? ----> int, the value of which is matrix[1][5];
+
+// whenever you're confused with the interpretion, just try to replace */indirection, with []/subscript !!!!!
+
+12. ****key topic**** Pointers to Arrays!!!
+we know, we can do this:
+int vector[10], *vp = vector;   // because vp is a ptr to int, vector is either;
+
+but, we cannot do this:
+int matrix[3][10], *mp = matrix  // NO!!! matrix is a pointer to an array of int, not ptr to int!
+/* So I ask: how can we declare a pointer to an array? */
+int (*mp)[10];    // * and [], [] has higher precedence; but we use parentheses, we know *mp means mp is a pointer, but
+		  // it points to something, what is that? an array! because we have [10] later!
+
+so, we can do:
+	int (*mp)[10] = matrix;   // mp points to the first row of matrix
+similarly, if we have int matrix[3][6][9]; we can assign:
+	int (*mp)[6][9] = matrix;  // and so on;
+
+** think in this way: suppose we have matrix[3][6][9]; we need (*p)[6][9] to equal to it. becuase, *p === p[0];
+** which is counterpart of matrix[0] ------> p ==== matrix
+
+**** if we want to assign a pointer to each array element and do arithmetic, we do: ****
+int *pi = &matrix[0][0];   // or,
+int* pi = matrix[0]
+//////////////////////
+int* ptr = &matrix[1][2];
+int* ptr = matrix[1] + 2;
+///////////////////////
+
+13. multidimensional array as function argument
+one dimension:
+	int vector[10];
+	int func( int vector[] ); // or, int func( int* vector );
+// call:
+	func( vector )
+
+two dimension:
+	int matrix[3][10];
+	int func1( int (*matrix)[10] ); // or, int func1( int matrix[][10] );
+// call:
+	func1( matrix )
+
+The  key  here  is  that  the  compiler  must  know  the  sizes  of  the  second  and  subsequent  dimensions
+in  order to  evaluate  subscripts,  thus  the  prototype  must  declare these dimensions
+
+be carefull: int** mat is not equal to int (*mat1)[10]; becuase mat is a pointer to a int pointer; mat1 is a pointer to
+an array of int
+
+14. initialization:
+int matrix[2][3] = { 100, 101, 102, 110, 111, 112 };
+
+// way 2:
+int };
+two_dim[3][5] = {
+{ 00, 01, 02, 03, 04 },
+{ 10, 11, 12, 13, 14 },
+{ 20, 21, 22, 23, 24 } 
+}
+
+int   three_dim[2][3][5] = {
+            {
+                  { 000, 001, 002, 003, 004 },
+                  { 010, Oil, 012, 013, 014 },
+                  { 020, 021, 022, 023, 024 }
+            },
+	    {
+                  { 100, 101, 102, 103, 104 },
+                  { 110, 111, 112, 113, 114 },
+                  { 120, 121, 122, 123, 124 }
+	    }
+};
+
+15 ****key topic***** arrays of pointers
+int *api[10];
+
+/* analysis:
+** api[] is an array; api[10] indicate an array element, by * api[10], we get int, then what is the array
+** element? of course ptr to int!!!  (remember: [] has higher precedence than * )
+
+** compare int (*pi)[10]:
+** (*pi)[] is an array; (*pi)[10] indicates an array element, and it's int; so (*pi)[] is an array of int;
+** however, we also know (*pi) is an pointer that points to an array of int, then pi is the ptr that ptrs to a
+** pointer to an array of int */
+
+// example of array of pointer:
+char *keywords[] = {
+	"do",
+	"for",
+	"while",
+	"if",
+	"register",
+	"switch"
+};
+#define N_KEYWORDS sizeof(keywords) / sizeof( keywords[0])
+// think, the diffrence between prev example and the following one:
+char keywords[][9] = {
+	"do",
+        "for",
+        "while",
+        "if",
+        "register",
+        "switch"
+};
+// different in the momery used: d o \0 \0 \0 \0 \0 \0 \0;  r e g i s t e r \0;
+// while the first one: d o \0; f o r \0
+
+// a better example:!!!!!!!
+#include <string.h>
+int lookup_keyword( char const * const desired_word,
+    char const *keyword_table[], int const size )
+{
+	char  const **kwp;
+/*
+** For each word in the table ...
+*/
+	for( kwp = keyword_table; kwp < keyword_table + size; kwp++ )
+	      /*
+	      ** If this word matches the one we're looking for,
+	      ** return its position in the table.
+	      */
+	      if( strcmp( desired_word, *kwp ) == 0 )
+	            return kwp - keyword_table;
+/*
+** Not found.
+*/
+	return -1;
+}
+
+/* these examples give us a hint: we can create something like string object in C!! */
+// here is a TRICK !!!!!!
+
+char *keywords[] = {
+        "do",
+        "for",
+        "while",
+        "if",
+        "register",
+        "switch"
+	NULL
+};
+
+/* by doing this, we can search/access the array without knowing its size first !!!! */
+
+****chapter 9****
+C does not have string types, but it has char array to store string, such is, cstring.h
+string =
+0 or more chars, followed by a NUL  (bit 0)
+the length of a string does not include the NUL
+
+//1. string length
+#include <stddef.h>
+size_t strlen( char const* string ) {
+	int length = 0;
+
+	while( *string++ )
+		length++;
+
+	return length;
+}
+
+// note, size_t is an unsigned int type, defined in <stddef.h> meaning that expression like:
+// strlen( x ) - strlen( y ) is always >=0, because unsigned value is always positve!!!!
+
+//2. copy string
+char* strcpy( char* dst, char const* src ) {
+	char* save = dst;
+	while( *dst++ = *src++ );
+	return save;
+}
+// The  characters  after  the  first  NUL  byte  are  never  accessed  by  the  string  functions
+//, and  are, for all practical purposes, lost. 
+
+ATTENTION!!!!! what if dst is shorter than src in length?!!!???
+	the strcpy function will run over then end, and OVERWRITE whatever variables that happen to follow dst in
+	the memory; So, AVOID THIS BY CHECKING THE LENGTH FISRT!!!!
+
+3. concatenate string
+
+char* strcat( char *dst, char const*src ) {
+	char *ret;
+	for( ret = dst; *dst; dst++ );
+	while( *dst++ = *src++ );
+	return ret;
+}
+
+Once again, the programmer must ensure that there is enough space remaining in the  destination array to
+hold the entire source string
+
+nested calls:
+	strcat( strcpy( dst, a ), b );
+
+4. compare string
+int strcmp( char const* str1, char const* str2 ) {
+	for( ; *str1 && *str1 == *str2; str1++, str2++ );
+	return *str1 - *str2;
+}
+
+// it returns negative if str1 < str2, positive if str1 > str2, 0 if str1 == str2
+
+5. Length-Restricted String Functions (all versions)
+01. char *strncpy( char *dst, char const* src, size_t len ) {
+	int n;
+	char* copy = dst;
+	for( n = 1; n < len && ( *dst = *src ); dst++, src++, n++ );
+	return copy;
+}
+
+If strlen( src )  is  greater  than  or  equal  to  len,  then  only  len  characters  will  be  written  to  dst,
+and the result will not be NUL terminated!
+
+ATTENTION:
+	Before using the unrestricted functions, you must first ensure that the string is actually NUL terminated
+
+02. char* strncat( char *dst, char const* src, size_t len );
+
+03. int strncmp( char const* s1, char const* s2, size_t len );
+
+6.****Key Topic**** String Searcing!!!!!
+01. find a char: find the first  occurrence  of  the  character  ch
+char *strchr( char const* str, int ch ) {
+	while( *str != (char)ch )
+		if( !*str++ )
+			return NULL;
+	return str;
+}
+
+02. find a char: locate the last occurence
+char *strrchr( char const* str, int ch ) {
+	char *ret = NULL;
+	while( *str )
+		if( *str++ = (char)ch )
+			ret = str - 1;	
+
+	return ret;
+}
+
+03. find any of the several chars
+char *strpbrk( char const* str, char const* group ) {
+	char *ch;
+	while( *str ) {
+		ch = group;
+		while( *ch )
+			if( *ch++ == *str )
+				return str;
+		str++;
+	}
+	return NULL;
+}
+
+04. find a substring
+char *strstr( char const* s1, char const* s2 );
+
+05. finding tokens to separate string
+char *strtok( char* str, char const* sep );
+
+06. error message
+#include <errno.h>
+char *strerror( in error_number );
+
+
+6. Char Operations: <ctype.h>
+01. character classification functions:--> each takes an integer
+iscntr()
+isspace( int ch ) : whitespaces: \t, \n, \v, ' ', \f
+isdigit()
+isxdigit()
+islower()
+isupper()
+isalpha()
+isalnum()
+isgraph()
+
+02. Char transforamtion
+toupper()
+tolower()
+// returns the char in int
+
+7. **** key topic **** Memory Operation!!!
+think: str/strn... operates strings with a '\0' or, NUL, as termination signal; however, whatif we just want to
+	deal with arrays of any type??, we don't want to stop when 0 is confronted????
+solution: mem...
+
+01.
+void *memcpy( void *dst, void *src, size_t length );
+// copy length var of ANY TYPE from src array to dst array!!!!
+// HOWEVER! only length BYTEs are copied!!!!!!
+// warm up: 1 char ---- 1 byte
+	    1 int ----- 4 bytes.....
+so, for example:
+int temp[size], value[size];
+memcpy( temp, value, size * sizeof( int ) );  // copy size * 4 bytes, i.e., size-integers from value to temp
+
+if, you wanna just copy part of the array, let's do:
+memcpy( temp, value, count * sizeof( value[0] ) );
+
+02.
+void *memmove( void *dst, void *src, size_t length );
+// same as memcpy, but allow the dst and src to be overlapped; slower than memcpy;
+// overlap meanning: eg: str[] = "memmove can be very useful...";
+// memmove( str+20, str+15, 11 );  // answer: "memmove can be very very useful
+
+03.
+int memcmp( void *dst, void *src, size_t length );
+// compare: neg, 0, pos
+
+04
+void *memchr( void *ptr, int value, size_t length )  // search for string that equals to value
+
+////// pay attention to the following application: tansferring data is usually byte by byte, so we can basically
+////// swap anything by using the following technique:
+
+void byte_swap( void *ptr1, void *ptr2, size_t size ) {
+        unsigned char *temp = ( unsigned char * )malloc( size );
+        memmove( temp, ptr1, size );
+        memmove( ptr1, ptr2, size );
+        memmove( ptr2, temp, size );
+        free( temp );
+}
+// by transferring data with an "unsigned char *arr", we can safely copying data without losing info
+// if you still worry about losing info, try to truncate one byte into half-bytes:
+// eg:
+// char temp = ch & 0b00001111; temp += ch & 0b11110000;  ... and so on...
+
+****chapter 10**** Structures, Unions!!!
+values with dissimilar types can be stored together using a structure
+
+1. basics
+two types of aggregate data: arrays, structures
+arrays has name, as a pointer; to access array element, we use */indirection, or []/subscript
+structures' name is a scalar; no * or [] to access members;
+
+2. structure declaration
+// format:
+struct tag{
+	member-list;
+} variable-list;
+
+// example: note: the following to examples do not MENTION TAG!!!
+struct {
+	int a;
+	int b;
+	float c;
+} x;
+
+struct {
+	int a;
+	int b;
+	float c;
+} y[20], *z;
+
+// you think they are referencing the same structure? you think you can do this:
+	x = *z;   // or, some what y[4] = x; ?????  or z = &x?????
+NO!!!!! because You did not mention tag, without which the compiler does not think the two structs are of same type!!
+	the tag allows many declarations to use same member list many times:
+
+struct SIMPLE {
+	int a;
+	int b;
+	float c;
+};
+// now we have a struct tagged by "SIMPLE", but we don't have even an variable! here is next:
+struct SIMPLE x;    // here, treat "struct SIMPLE" as a type, just like "int", "long"....!!!!!
+struct SIMPLE y[20], *z;
+
+// now we can boldly ASSIGN:      z = &x;  *(y + 10) = *z;
+// because they are all of same type now!
+
+// BBBBBBUT, we can cleverer way to do this!!!
+typedef struct{
+	int a;
+	int b;
+	float c;
+} Simple;
+
+// remember: typedef has a format to use:
+	typedef int INTEGER;   // typedef unsigned char BYTE;
+// so let's associate this:
+	typedef struct(tag){ ...... } SIMPLE;   // isn't this the same??? Yes!!!
+           1              2             3 
+// part1 is typedef keyword, part2 is the real defination of the type(tag is optional), part3 is the newname of part2
+
+// now Simple is no longer a tag, but a newly defined type name. we can do:
+Simple x;     // this time, we treat "Simple" as a type, just like "int", "long"....!!!!!
+Simple y[20], *z;
+// still, they can refer to the same type.
+tips: If  you  want  to  use  a  particular  structure  in  more  than  one  source  file,
+you  should  put  the  tag  declaration  or  typedef  in  a  header  file.  You  can  then 
+#include  the  declaration  wherever it is needed
+
+3. structure members, vs array elements
+any kinds of variable that can be declared outside of structure, can also be declared inside structure!
+// let's see a complex example:
+struct COMPLEX {
+	int a;
+	float b;
+	double c[10];
+	char *d;
+	struct SIMPLE f, *e, g[20];
+};
+// and, members of a structure may have the same name with members of other structure
+
+4. direct member access, dot sign
+First, we declare a struct COMPLEX var:      struct COMPLEX comp;
+01. comp.a;
+02. comp.b;
+03. comp.c;  // since c is the name of an array, what if we want to have access to its element?
+	comp.c[3];  // here we introduce the TOP precedence operators:
+		    // ++  --  ()  []  .  ->
+		    // associativity:  from left to right!!
+// that's why we can avoid writing: ( comp.c )[3];
+04. comp.d;   // to indirect the value that d points to, let's do:  *( comp.d ); of course, *comp.d also works
+05. comp.f.a    // structure in structure, from left to right, accessing innest member
+06. ( *comp.e ).c[5];
+07. comp.g[10].b;
+
+5. indirect member access, subsript sign
+// suppose we have a function call:
+void func( struct COMPLEX *cp )
+// now in func body, we want to access the member in *cp:
+// perhaps you want to do
+( *cp ).f;
+// but SAVE IT!!! we can actually do:
+cp->f;
+// in C, the left operand of -> MUST BE a STRUCTRUE!!!
+
+6.****self-referential structure**** Key topic!!!!! ( compare to C++ node, lists, trees... )
+// can there be a structure that contains a structure of same type as member? YES!
+struct SELF_REF1 {
+	int a;
+	struct SELF_REF1 b;  // wrong! computer cannot know the size of structure beforehand; it cannot allocate;
+	int c;
+};
+// NOOOOOOO!! this is wrong, b has member b, b has member b... never ends! dead recursion
+// but the following deed is right:
+struct SELF_REF2 {
+	int a;
+	struct SELF_REF2 *b;  // correct!
+	int c;
+};
+// the compiler this time, knows the size of pointer to a structure even BEFORE the size of the structure is
+// determined!!!!!
+ABOUT THE SIZE OF POINTER:
+/* depends solely on your computer's architecture
+** Usually, the pointer's size is equal to the word size of its underlying processor architecture
+** so, for a 32bit PC, 8bits = 1byte, 4bytes = 1 word ===> pointer size: 32bits
+** for a 64bit PC, 8bits = 1byte, 8bytes = 1 word ====> pointer size: 64bits
+** however, no matter what architecture, the pointers size are always same, no matter what type, int, long, double...
+*/
+
+// also, watch out for this TRAP!!!
+typedef struct {
+	int a;
+	SELF_REF3 *b;
+	int c;
+} SELF_REF3;
+// this is wrong!!!, because the SELF_REF3, as the new name for the type,  becomes defined only AFTER declaration!!
+
+// here is the solution:
+typedef struct SELF_REF_TAG{
+	int a;
+	struct SELF_REF_TAG *b;  // struct + TAG as a whole, is the type!!!
+	int c;
+} SELF_REF3;
+
+7. incomplete declaration
+// mutually dependent structures, "you have me, I have you"; then, who declares itself first?
+// answer: using incomplete declaration:
+struct B;
+struct A{
+	int a;
+	struct B b;    //
+	struct A *a;
+};
+struct B{
+	int b;
+	struct A a;   //
+	struct B *b;
+};
+
+/////////////// another way is:///////////
+typedef struct TAG_B B;
+typedef struc TAG_A {
+	B b;
+	....
+} A;
+
+struct TAG_B {
+	A a;
+	...
+};
+
+8. intializing struct
+rule 1: The values are written in the order given in the member list;
+rule 2: Missing values  cause the remaining members to get default initialization
+// example:
+struct INIT_EX{
+	int a;
+	short b[10];
+	Simple c;
+} x = {
+	10,
+	{ 10, 2, 4, 7 },
+	{ 25, 'x', 1.9 }
+};
+
+OK, it's time to make a summary:
+
+00001. if we just declare/define a struct we may do:
+struct TAG_NAME{
+	type1 var1;
+	type2 var2;
+	....
+};
+
+struct TAG_NAME obj1, obj2, obj3....
+obj1.var1 = ....
+
+00001-1. it is also possible to omit tag:
+struct {
+	type1 var1;
+	type2 var2;
+	.....
+} obj1, obj2;
+// yet, by using this method, you cannot repetively create same type of structure variables anywhere else!!!
+
+00002. another way that we integrate declaration/defination and struct-var creation:
+struct TAG_NAME{
+        type1 var1;
+        type2 var2;
+        ....
+} obj1, obj2, obj3......;
+
+obj1.var1 .....
+// if we decide to declare more this type of structure somewhere, we can just:
+struct TAG_NAME x;
+
+0003. sometimes, we can use 'typedef' to further simplify things:
+typedef struct TAG_NAME{
+	type1 var1;
+	type2 var2;
+	....
+} NEW_NAME;
+
+NEW_NAME obj1, obj2, obj3....
+obj1.var1..........
+
+9. structures, pointers, and members
+// the following example also tells us that, TAGS, are neccessary only if we must have pointer to the structure
+// itself inside:
+typedef struct{
+	int a;
+	short b[2];
+}EX2;
+
+typedef struct EX_TAG{
+	int a;
+	char b[3];
+	EX2 c;
+	struct EX_TAG *d;
+}EX;
+// here, we see that EX2 does not have tag, yet EX2 is definitely a structure substitute; however, EX MUST HAVE
+// tag, that's needless to say.
+
+// how can I intialize EX?
+EX x = { 10, "hi", { 4, {2, 4} }, NULL };
+EX *px = &x;
+
+// now, let's see:
+*px, and px->a;
+we know, px points to a structure, and the first member of px, which is a, has the same address with *px; however,
+px is a pointer that point to a structure, not to an int! so *px is the whole structure, not a;
+
+in other words, if there is a int *pi;
+WE CANNOT DO THIS:
+pi = px;     // because pi and px points to different types
+BUT WE CAN DO THIS CAST:
+pi = (int*)px;   // dangerous! even right;
+WE BETTER DO THIS:
+pi = &px->a
+
+// neste structure:
+px->c.a;
+*px->c.b;  // * has lower precedence than ->,.; so, this refer to the first element of b;
+Ex y; px->d = &y; // now we can dereference px->d because it's no longer a NULL ptr */ *px->d ...
+// like:
+px->d->a
+px->d->c.b[1];
+...
+
+10. structure storage allocation
+there is basically no empty space in structure memory, memory  is  allocated  for  each  of  the  members,
+one  after another,  in  the order given by the member list
+however, there are data alignment issues that affect storage of structure data:
+struct ALIGN{
+	char a;
+	int b;
+	char c;
+}
+// in memory, in order to make sure data aligned in memory, IT IS REQUIRED to start every data memory at
+// a multiple of 4:
+| __ __ __ __ | __ __ __ __ | __ __ __ __ |
+  ch               i n t      ch
+// so, each ch just needs 1 byte, the following 3 byte were wasted; int takes 4 bytes, as usual.
+// we can modify like this:
+struct ALIGN1{
+	int b;
+	char a;
+	char c;
+}
+| __ __ __ __ | __ __ __ __ |
+     i n t      ch ch  
+// in this case, we just waste 2 bytes
+the members of a structure should be arranged according  to  their  boundary  needs  in  order  to 
+minimize  the  memory  that  will  be  lost  to  alignment
+
+11. Structures as Function Arguments
+// I must say, yes, we can pass structures as value to functions, HOWEVER, it is INEFFICIENT! because we need
+// to copy so many bytes and later discard them!
+typedef struct {
+	char product[product_size];
+	int quality;
+	float unit_price;
+	float total_amount;
+} Transaction;
+// call by value:
+void print_receipt( Transaction trans ) {
+	printf( "%s\n", trans.product ); ...
+}
+
+// now, we provide an efficient method! pass by reference!!
+// we know, no matter what type a variable is, its address always takes ONE WORD (4 or 8 bytes ) memory. so:
+void print_receipt( Transaction *trans ) {
+	printf( "%s\n", trans->product ); ....
+}
+// to call, we can do:
+Transaction *current_trans;
+Transaction trans;
+print_receipt( current_trans ); // or // print_receipt( &trans );
+// of course, it we dont want functions to modify the value of structures, and we want faster faster operation in CPU,
+// not MEMORY, we can do:
+print_receipt( register Transaction const * trans ) {
+ ....
+}
+
+// pointer provides a faster and more efficient way to modify structure either:
+// 1st, BAD way:
+Transaction compute_total_amount( Transaction trans ) {
+	trans.total_amount = trans.quality * trans.unit_price;
+	retrun trans;
+}
+
+current_trans = compute_total_amount( current_trans );   // not efficient;
+// 2nd way, good one:
+void compute_total_amount( register Transaction *trans ) {
+	trans->total_amount = trans->quantity * trans->unit_price;
+}
+// conclusion: if you can pass structure by reference, don't pass by value!
+
+12. Bit Fields
+// suppose we have a 32-bits machine:
+struct Disk_Register_Format{
+	unsigned command : 5;
+	unsgined sector : 5;
+	unsigned track : 9;
+	unsigned error_code : 8;
+	unsigned head_loaded : 1;
+	unsigned write_protect : 1;
+	unsigned distk_spinning : 1;
+	unsigned error_occurred : 1;
+	unsigned ready : 1;
+};
+
+#define DISK_REGISTER ( (struct Disk_Register_Format *) 0xc0200142 )
+DISK_REGISTER->sector = ....
+
+13. Union
+all members of a union refer to the same locations in memory; eg:
+
+union {
+	float f;
+	int i;
+} fi;
+// this union fi only takes 32-bits, because both float and int take 32-bit, and only one survives!!!
+// what if two types have different sizes? then the whole union takes the larger one as it's capacity in memory!!
+// if you assign:   fi.f = 3.1415;   then, if you do: printf( "%d\n", fi.i );  this is interpreted as to print an
+// integer with exactly the same bits in 3.1415;
+
+14. variant records
+Variant Records, the very same concept as Union, means that a  particular  area  in  memory  will  store
+different  types  of  values  at  different  times
+However, instead of storing simple data type like int, float as Union does, Variant Records stores Structures!!!
+// example:
+
+struct PARTINFO {
+	int cost;
+	int supplier;
+};
+
+struct SUBASSYINFO {
+	int n_parts;
+	struct {
+		char partno[10];
+		short quantity;
+	} parts[MAXPARTS];
+};
+
+// now, the variant record comes:
+struct INVREC {
+	char partno[10];
+	int quantity;
+	enum {PART, SUBASSY } type;
+	union {
+		struct PARTINFO part;
+		struct SUBASSYINFO subassy;
+	} info;
+} rec;
+// how to install:
+if( rec.type == PART ) {
+	y = rec.info.part.const;
+	z = rec.info.part.supplier;
+}
+else {
+	y = rec.info.subassy.n_parts;
+	z = rec.info.subassy.parts[9].quantity;
+}
+// by complexing Unions and Structures, we can optimize the storage usage in memory... and so on...
+//  because In a union whose members are different sizes, the amount of memory allocated  for  the  union
+// is  determined  by  the  size  of  its  largest  member.
+
+***** but one thing we must grip:*******
+** as long as the data type is tooo large, we must replace the data with a POINTER!!! to it, because pointer is always
+** a word size!!!!! ********************
+
+
+
+****Chapter 11**** Dynamic Memory Allocation, Key Chapter!!!!!
+when an array is declared, its memory is allocated at compile time; can we also allocate meomery at Runtime?? (DMA)
+
+1. malloc, free
+malloc : dynamic memory alloc
+fee    : dynamic memory dealloc
+// #include <stdlib.h>
+void *malloc( size_t size );
+void free( void *pointer );
+
+// On success, a pointer to the memory block allocated by the function.
+// The type of this pointer is always void*, which can be cast to the desired type of data pointer in order to be
+// dereferenced.     ( eg., (char*) malloc( i + 1 ); // cast it to anytype )
+// If the function failed to allocate the requested block of memory, a null pointer is returned.
+// THINK:    these functions maintain a POOL of available memory; once required, malloc takes a piece of memory from
+// the POOL and return the address of new piece of memory to YOU.
+//           once called free, free() return the memory back to the POOL for later usage...
+
+Note:
+01. size, is the number of BYTES of memory that is needed
+02. if the desired amount of memory is available, malloc() returns a pointer to the beginning of the allocated block;
+    however, this pointer has no type by default; you gonna cast it to a type!!!
+03. malloc ALWAYS allocate a CONTIGUOUS block of memory (continuous, successive... )
+04. MOST importantly, the argument to free() MUST BE a pointer that was previously returned from |-- malloc()
+												 |-- calloc()
+												 |-- realloc()
+    you cannot arbiturarily pass any other normal pointers to free()!!! they cannot be freed!!!
+05. does the malloc() know whether you want to store int, float, struct, or whatsoever? NO!! that's exactly why
+    it returns void* type, which can be casted into any type later;
+
+
+2. calloc, realloc
+void *calloc( size_t num, size_t size );
+// allocate a block of memory for an array of num element, each of which has size bytes, and initializes all its bits
+// to 0.
+
+void *realloc( void *ptr, size_t new_size );
+// re-allocate the memory block pointed by ptr, to a memory with new_size bytes; i.e., change the size of a previously
+// allocated block of memory:
+01. if the new_size > old size:
+	its old contents remain unchanged and additional memory is added to the end of block
+02. if the new_size < old size:
+	old contents still remain unchanged but, extra memory is take off from the end; what remains of the original
+	contents are unchanged.
+03. if realloc( NULL, n ); it is actually the very same as malloc( n );
+
+
+3. Using dynamic memory allocation...
+int *pi;
+...
+pi = malloc( 100 );  // direcct pointer pi to a new memory block of 100 bytes, i.e, 25 integers.
+if( pi == NULL ) {// check success or not
+	printf( "out of memory\n" );
+	exit(1);
+}
+
+// if you are not sure the size of int on a specific machine, try:   pi = malloc( 100 * sizeof(int) );
+
+4. Common Errors, Must look at !
+01. (most common) forgetting to check whether the requested memory was allocated, or not:
+02. going outside of the bounds of the memory that was allocated
+03. calling free() with a pointer to memory that was not dynamically allocated ( program terminate )
+	meanwhile, only freeing a portion of DMA ptr is not allowed! the whole block must be freed.
+04. finally, there is a risk of trying to access freed memory; for eg., you made copies of the ptr to DMA memory, but
+	you freed the DMA memory before whole program ends, then some parts of the program will be affected..
+
+5. WARNING! memory leaks
+allocating memory without freeing it afterwards, may result computer resource deficit, and reboot PC is the only cure
+
+6. DMA Programming Examples
+// part 1, sorting
+#include <stdlib.h>
+#include <stdio.h>
+
+int compare_integers( void const *a, void const *b ) {
+	return ( *a > *b ? 1 : *a < *b ? -1 : 0 );  // this is the "if...else if...else" version!!!!!
+}
+
+int main( void ) {
+	int *array;
+	int n_values;
+	int i;
+
+	printf( "How many values are there: " );
+	if( scanf( "%d", &n_values ) != 1 || n_values < 0 ) {
+		printf( "illeganl number of values.\n" );
+		exit( EXIT_FAILURE );
+	}
+
+	array = malloc( n_values * sizeof( int ) );
+	if( array == NULL ) {
+		printf( "Can't get memory for that many values.\n" );
+		exit( EXIT_FAILURE );
+	}
+
+	for( i = 0; i < n_values; i++ ) {
+		printf( "next value: " );
+		if( scanf( "%d", array + i ) != 1 ) {
+			printf( "Error reading value #%d\n", i );
+			exit( EXIT_FAILURE );
+		}
+	}
+
+/* Great function that included in <stdlib.h> :
+** void qsort (void* base, size_t num, size_t size, int (*compar)(const void*,const void*));
+
+** Sorts the num elements of the array pointed to by base, each element size bytes long
+** using the compar function to determine the order
+*/
+
+	qsort( array, i, sizeof( int ), compare_integers );
+
+	for( i = 0; i < n_values; i++ )
+		printf( "%d\n", array[i] );
+
+	free( array );   // don't forget this!!!!
+	return EXIT_SUCCESS;
+}
+
+// part2, string manipulations
+#include <stdlib.h>
+#include <string.h>
+/* make copy of a string in the dynamic allocated memory */
+char *strdup( char const *string ) {
+	char *new_string;
+	new_string = malloc( strlen( string ) + 1 );
+
+	if( new_string != NULL )
+		strcpy( new_string, string );
+
+	return new_string;
+}
+/* don't forget to free new_string in the end */
+
+// part3, now, we look at this final example, VERY IMPORTANT!!! ( using DMA to eliminated wasted memory with 
+// variant records!!!!
+
+typedef struct {
+	int cost;
+	int supplier;
+} Partinfo;
+
+typedef struct {
+	int n_parts;
+	struct SUBASSYPART{ // here, TAG name is mandatory because we need to uniform all this structure in
+			    // every copy of this structure var
+		char partno[10];
+		short quan;
+	} *part;
+} Subassyinfo;
+
+typedef struct {
+	char partno[10];
+	int quan;
+	enum {PART, SUBASSY} type;
+	// here comes the variant record's characteristics
+	union {
+		Partinfo *part;  // this pointer just takes a word's memory, so it's very efficient in storage
+		Subassyinfo *subassy;
+	} info;
+} Invrec;
+
+////////////////////////////////////
+#include <stdlib.h>
+#include <stdio.h>
+#include "inventor.h"
+
+Invrec* create_subassy_record( int n_parts ) {  // Note: this is just creating Subassy record, not part record!!
+	Invrec *new_rec;
+	new_rec = malloc( sizeof( Invrec ) );  // allocate memory block of Invrec size, return the pointer to new_rec
+
+	if( new_rec != NULL ) {
+		new_rec->info.subassy = malloc( sizeof( Subassyinfo ) );
+		// remember, we must allocate space for subassy, because it is not initialized, and we cannot thus,
+		// assign and value for it!!!!
+
+		if( new_rec->info.subassy != NULL ) {
+			new_rec->info.subassy->part = malloc( n_parts * sizeof( struct SUBASSYPART ) );
+			// now, part points to the beginning of an array of struct SUBASSYPART! how WONDERFUL!!
+
+			if( new_rec->info.subassy->part != NULL ) {
+			// which means, every final last details is fine, we can finalize it:
+				new_rec.type = SUBASSY;
+				new_rec->info.subassy->n_parts = n_parts;
+				return new_rec;
+			}
+
+			free( new_rec->info.subassy);   // if not return, means failure, then free memory
+			// note, ...->part was not freed because it is NULL!!!!
+		}
+		free( new_rec );
+	}
+	return NULL;	
+}
+
+//////// similarly, let's do the part record /////////
+Invrec* create_part_record( int cost ) {
+	Invrec *new_rec;
+	new_rec = malloc( sizeof( Invrec ) );
+	if( new_rec != NULL ) {
+		new_rec->info.part = malloc( sizeof( Partinfo ) );
+		if( new_rec->info.part != NULL ) {
+			new_rec.type = PART;
+			new_rec.info.part->cost = cost;
+			return new_rec;
+		}
+
+		free( new_rec );
+	}
+	return NULL;
+}
+
+/////////this function is at the end of main(), it dicard any previously allocated memory///////
+void discard_inventory_record( Invrec *record ) {
+	switch( record->type ) { // ask: is a part record, or subassy record?
+	case SUBASSY:
+		free( record->info.subassy->part );
+		free( record->info.subassy );
+		free( record );
+		break;
+	case PART:
+		free( record->info.part );
+		free( record );
+		break;
+	default:
+		printf( "error record type found!" );
+		exit( EXIT_FAILURE );
+} // note, the deleting process obey reverse order, i.e., deleting from the innest! otherwise, you spoil the lead
+  // to previously allocated inner structures!
+
+
+
+**** chapter 12 **** ADT, using structures and pointers **** KEY CHAPTER!!!!
+1. Linked List
+1.1 singly linked list
+  in a singly linked list, each node constains a pointer to the next node in the list.
+  the last node in the list contains a NULL ptr to indicate the end
+  a ROOT pointer, points to the first node, indicating the beginning of the list ( root ptr contains no data however )
+
+1.2 insertion into a Singly Linked List
+// let's do insertion into an ODERed, singly list (meaning, value of lists are ordered from, i.e., smaller to bigger )
+#include <stdlib.h>
+#include <stdio.h>
+
+/* suppose we have this list-structure:
+typedef struct NODE{
+	struct NODE *link;
+	int value;
+} Node;
+*/
+
+#define FALSE 0
+#define TRUE 1
+/* we want to insert a new_value to linked list, current start from head */
+int sll_insert( Node *current, int new_value ) {
+	Node *previous;
+	Node *new;
+
+	while( current->value < new_value ) {
+		previous = current;   /* previous keeps track to the list right before current */
+		current = current->link;
+	}
+
+	new = ( Node *)malloc( sizeof(Node) );  // cast malloc to Node* type
+	if( new != NULL ) {
+		new->value = new_value;
+		new->link = current;
+		previous->link = new;
+		return TRUE;
+	}
+	return FALSE;
+}
+
+////////// now let's call the function://///////
+int result = sll_insert( root, 12 );
+////however, the above funtion has erros!, though the though was right.///////
+//01. cannot stop looping by detecting NULL
+//02. cannot insert a smallest value because there's no way to access root node.
+/* so, the best solution here is to make root a pointer to Node* first, i.e., a pointer to pointer: Node **    */
+#include <stdio.h>
+#include <stdlib.h>
+
+typedef struct NODE{
+        struct NODE *next;
+        int value;
+} Node;
+
+int sll_insert( Node **rootp, int value ) {
+	Node *current;
+	Node *previous;
+	Node *new;
+
+	current = *rootp;  // root is Node*, pointing to the first node; rootp is Node**, pointing to root
+	previous = NULL;
+
+	while( current != NULL && current->value < value ) {
+		previous = current;
+		current = current->next;
+	}
+
+	new = ( Node* )malloc( sizeof( Node ) );
+	if( new == NULL )
+		return FALSE;
+
+	new->value = value;
+
+	if( previous == NULL ) {
+		new->next = current;
+		current = new;
+	}
+	else {
+		previous->next = new;
+		new->next = current;
+	}
+
+	return TRUE;
+}
+
+// ATTENTION!!!! now I will explain why we need pass an pointer to a pointer, instead of pass a pointer to Node:
+// as we know, root is of Node* type, it points to the fist node of the linked list;
+// when we pass root to the function, REMEMBER, we are not passing root itself to the function, WE PASSED A COPY!!!!
+// of root; so when you insert this:    root->next = new; new->next = current;  NO!!!!! you are actually doing:
+					copy->next = new; new->next = current;  Yes, just manipulating the copy only!!!
+// in the end, root is still pointing to the originally-anominated "first element", not the new node!!
+
+// That's why, we need to pass ( Node** rootp ) to the function:
+// rootp------->root------>first node
+   (Node**)    (Node*)       (Node)
+    |             ^
+    |             |
+   copy_rootp-----
+   (Node**) 
+// by passing a copy of rootp, we can access root now!!! by: *rootp, (actually, *copy_rootp), we manipulate root itself
+// next, new version comes:
+#include <stdio.h>
+#include <stdlib.h>
+#define TRUE 1
+#define FALSE 0
+
+typedef struct NODE{
+        struct NODE *next;
+        int value;
+} Node;
+
+int sll_insert( register Node **linkp, int new_value ) {
+	register Node *current, *new;
+	current = *linkp;
+
+	while( current != NULL && current->value < new_value ) {
+		linkp = &current->next;
+		current = current->next;   // or, current = *linkp
+	}
+
+	new = (Node *)malloc( sizeof( Node ) );
+	if( new == NULL )
+		return FALSE;
+
+	new->value = new_value;
+	new->next = current;
+	*linkp = new;
+	return TRUE;
+}
+
+
+1.3 Doubly linked list
+
+typedef struct NODE {
+	struct NODE *prev;
+	struct NODE *next;
+	int value;
+} Node;
+
+// now, we have two root nodes: one points to the first node, the other points to the end node;
+// so, here is one implementation to only use one root:
+
+/* root points to first node; root->next = first_node;  root->prev = last_node; root->value UNDEFINED!
+			      last_node->next = NULL;
+*/
+
+1.4 Insertion into the dll
+
+#include <stdio.h>
+#include <stdlib.h>
+#define TRUE 1
+#define FALSE 0
+
+int dll_insert( Node *root, int new_value ) {
+	Node *current;
+	Node *previous;
+	Node *new;
+
+	current = root;
+	while( current != NULL && current->value < new_value ) {
+		previous = current;
+		current = current->next;
+	}
+
+	if( current->value == new_value )
+		return FALSE;  // in this function, we don't insert same value to the list
+
+	new = ( Node* )malloc( sizeof( Node ) );
+	if( new == NULL )
+		return FALSE;
+
+	if( current == root ) { // i.e., we insert the value to the very first of the linked list
+		new->prev = current->prev;
+		new->next = current;
+		current->prev = new;
+	}
+	else if( current == NULL ) { //i.e., we insert the value to the very end of the linked list
+		root->prev = new;
+		previous->next = new;
+		new->next = NULL;
+		new->prev = previous;
+	}
+	else {  //i.e., insert into the middle of the linked list
+		previous->next = new;
+		current->prev = new;
+		new->next = current;
+		new->prev = previous;
+	}
+
+	return TRUE;
+}
+
+// the above function is redundant, inefficient; let's have a look at the succinct one , following:
+
+#include <stdio.h>
+#include <stdlib.h>
+#define TRUE 1
+#define FALSE 0
+
+typedef struct NODE{
+        struct NODE *next;
+        int value;
+} Node;
+
+int dll_insert( register Node *rootp, int new_value ) {
+	register Node *current;
+	register Node *next;
+	register Node *newnode;
+
+	for( current = rootp; ( next = current->next ) != NULL; current = next ) {
+		if( next->value > new_value )
+			break;
+	} // we allow for repeat value this time, just for rationality...
+
+	newnode = (Node *)malloc( sizeof( Node ) );
+	if( newnode == NULL )
+		return FALSE;
+
+	newnode->value = new_value;
+	newnode->next = next;
+	newnode->prev = current;
+	current->next = newnode;
+
+	next == NULL ? rootp->prev = newnode : next->prev = newnode;
+
+	return TRUE;
+}
+
+
+****chapter 13**** ADVANCED pointer topics!!
+1. pointer must be initialized;
+eg:
+int i;
+int *pi;
+int **ppi;
+
+*pi = 5 // ILLEGAL!!
+// similarly, *ppi = pi, is illegal too, because the pointer is not initialized!
+
+However, if we initialize pointer first:
+ppi = &pi;
+*ppi = &i;
+i = 10;
+// this makes sense !!!!!
+
+2. advanced declarations
+int f;  // integer f
+int *f  // pointer f to int
+
+int *f, g // pointer f, int g
+int *f, *h // now, two pointers this time
+
+int f()  // function f, return int
+int *f()  // function f, return ptr to int
+int (*f)()  // pointer to function!!!! key topic.
+// each function in a program begins at some address  in  memory,  so  it  is  possible  for  a  variable  to
+// point  to  that  location
+int *(*f)(); // pointer to function f, return int *
+
+int f[] // array f
+int *f[]  // array f with int * elements
+
+// but int f()[] is illegal, because FUNCTION CAN ONLY return scalars, NEVER array!!!
+// similarly, int f[]() is also ILLEGAL, because functions can be different in sizes, how can there be an array of
+// different functions where their definitions could not possibly be same in sizes???
+
+int (*f[])();  //this is legal, because *f[] is an array of pointer to someting: pointer, always is 4 bytes (32-bits)!!
+// and then, (*f[])() is an array of pointers to functions that return int type
+
+int *(*f[])()  // easy this time... eh
+
+3. key topic: pointers to functions
+functions are also like var, they can be pointed, they have their address in memory!
+so, consequently, pointers to functions are also need to be INITIALIZED first!!!
+eg:
+int f( int a, float b );
+int (*pf)( int a, float b ) = &f;
+
+// so in order to call function we can:
+int ans;
+ans = f(10, 3.2);
+// or,
+ans = (*pf)(10, 3.2)
+// but this is not necessary of indirection, because when calling, the compiler will convert it back to pointer to look
+// for the function, so just:
+ans = pf(10, 3.2)
+
+// Rule of thumb:  the  compiler  wants  a  pointer  to  the  function  anyway!!!!!
+
+4. callback functions
+there are times when we passes  a  pointer  to  a  function  to  some  other  routine,  which  then   calls  back
+to the  user s  function
+this is often used when you are writing a function that must be  able  to  perform  different  types  of  work  at
+a given  point  or  perform  work  that  can  be  defined only by the function s caller
+
+We  cannot  write  an  accurate  prototype  for  the  callback  function
+The  solution  to  this  dilemma  is  to  declare the arguments as void *, which means  a pointer to something whose
+type we  do not know.
+
+eg: typeless linked list search:
+#include <stdio.h>
+Node *search_list( Node *node, void const *value, int (*compare)( void const *, void const * ) ){
+	while( node != NULL ) {
+		if( compare( &node->value, value ) == 0 )
+			break;
+
+		node = node->next;
+	}
+	return node;
+}
+
+int (*compare_ints)( void const *a, void const *b ) {
+	return *(int *)a - *(int *)b;
+}
+// by doing void const *a, we can cast a to int value and then compare them!!!
+// to call and use the search_list function, we can:
+//	desired_node = search_list( root, &desired_value, compare_ints );
+
+// another goood example is the qsort() function in the stdLibrary:
+void qsort( void *base, size_t num, size_t size, int (*compare)( void const *, void const * ) );
+// sort an array of some type pointed by base;
+
+One thing to remember: to call a function pointed by compare, just call: compare(), instead of (*compare)()!!!
+
+what if the node's value is not SCALAR, but ARRAY????!!!??
+then the compare function is no longer ---- int (*compare)(void const*, void const* ), but is:
+int strcmp( char const* str1, char const* str2 );
+
+so, call:
+		desired_node = search_list( root, "desired_value", strcmp );
+
+
+5. Jump Tables
+A jump table is just an array of pointers to functions
+// let's see the following pesudo code first:
+switch( oper ){
+case ADD:
+      result = add( op1, op2 );
+      break;
+case SUB:
+      result = sub( op1, op2 );
+      break;
+case MUL:
+      result = mul( op1, op2 );
+      break;
+case DIV:
+      result = div( op1, op2 );
+      break;
+...
+// however, if we want to use switch, we gotta use integers to choose from which case to take 
+double add( double, double );
+double sub( double, double );
+double mul( double, double );
+double div( double, double );
+	....
+double (*oper_func[])( double, double ) = {
+       add, sub, mul, div, ...   // just like int a[] = {1, 2, 3, 4, 5, ...}; array INITIALIZATION!!!
+};
+// this is a natural deduction, we know return type is gonna be double, oper_func[] is a function pointer array with
+// each elements being a pointer to a function;
+
+//This  example  assumes that ADD is zero, SUB is one, MUL is two, and so forth...
+so, instead of using switch, why not:
+result = oper_func[ oper ]( op1, op2 );
+// attentions: don't go out-of-boundary!
+
+
+6. Commmand Line Arguments
+Unix, MS-DOS, let  the  user  write  arguments  on the command that initiates the execution of a program
+then, how to pass these parameters to the program?
+int main( int argc, char **argv )
+
+argc: a count of the number of arguments to be passed from cmd line
+argv: a pointer to the first element of an array of pointers; each pointers in this array points to the text of one
+      argument
+so, if the program needs to access the command line arguments, the main function is declared with these parameters
+		int main( int argc, char **argv ) {     ...    }
+
+eg, print command line arguments:
+#include <stdio.h>
+#include <stdlib.h>
+
+int main( int argc, char **argv ) {
+	while( *++argv != NULL )
+		printf( "%s\n", *argv );
+
+	return EXIT_SUCCESS;
+}
+
+/*Print arguments until a NULL pointer is reached (argc is
+** not used).  The program name is skipped. */
+argc
+argv-------->| str0  | str1  | str2  | str3   |  str4  |  NULL |, each str ends with '\0';
+**** remember, white space separates these strings ****
+eg2:
+#include <stdio.h>
+#define TRUE 1
+
+void process_standard_input( void );
+void process_file( char *filename );
+
+int option_a, option_b;
+void main( int argc, char **argv ) { // char **argv is the very same with char *arg[]
+	while( *++argv != NULL && **argv == '-' ) { // we want to identify: prog -a -b -c name1 name2 name3... etc.
+		/* skip the program name: prog */
+		switch( *++*argv ) { // argv is NOT incremented, but *argv is;
+		case 'a':
+			option_a = TRUE;
+			break;
+		case 'b':
+			option_b = TRUE;
+			break;
+		// ... etc.
+		}
+	}
+
+	if( *argv == NULL )
+		process_standard_input();
+	else {
+		do {
+			process_file( *argv );
+		} while( *++argv != NULL );
+	}
+}
+
+7. string literals, again
+String literals, are actually pointer to constant char array!!! -----> string literal == char const *ptr;
+eg1:
+	"hello, world!" + 1    // it is a pointer to the letter 'e'
+eg2:
+	*"hello, world!"	// the letter 'h'
+eg3:
+	"hello, world!"[2]	// the letter 'l'
+
+// seldomly can we find an application for this, but look at the following program:
+#include <stdio.h>
+void print_histogram( int n ) {
+	n /= 10;
+	printf( "%s\n", "**********" + 10 - n );
+}
+
+eg4: converting hexidecimal to ascii:
+// first, as we know, we can use recursion tech to convert decimal to ascii:
+void decimal_to_ascii( unsigned int value ) {
+	unsigned int quotient;
+	quotient = value / 10;
+
+	if( quotient != 0 )
+		decimal_to_ascii( quotient );
+	putchar( value % 10 + '0' );
+}
+// now follow this thought, let's do the hexidecimal conversion:
+void hex_to_ascii( unsigned int value ) {
+	unsigned int quotient;
+	quotient = value / 16;
+	if( quotient != 0 )
+		hex_to_ascii( quotient );
+
+	if( quotient % 16 < 10 )
+		putchar( quotient % 16 + '0' );
+	else
+		putchar( quotient % 16 - 10 + 'A' );
+}
+// BUT!! this is not creative!!! not efficient at all!!! let's make a little change:
+// we get rid of the if..else statement, instead, we use this:
+
+	putchar( "0123456789ABCDEF" + quotient % 16 );
+
+// aHa!!! solved; so, IN SUM, string literals can always be used as projections from string to digits!!
+
+eg5: insert file name:
+char pathname[] = " /usr/temp/XXXXXXXXXXXXXXX";
+strcpy( pathname + 10, "sunxz.txt" );
+
+
+**** chapter 14 ****preprocessor
+1. Predefined Symbols (by preprocessor)
+
+_FILE_	"name.c"	name of the source file being compiled
+_LINE_	25		line number of the current line
+_DATE_	"Jan 31 2017"	date the file was compiled
+_TIME_	"18:04:30"	time the file was compiled
+_STDC_	1, 0		1, if the compilor conforms to ANSI C; 0 else
+
+2. #define
+#define name stuff    // keep in mind: stuff can be anything!
+
+eg:
+	#define reg register
+	#define do_forever	for(;;)
+	#define CASE	break;case
+
+***key topic: debug print: ***!!!
+
+#define DEBUG_PRINT	printf( "File %s line %d:" \
+				" x = %d, y = %d, z = %d", \
+				_FILE_, _LINE_, x, y, z )
+
+// \ is used to split multiple lines by ending each line with backslash
+// secondly, adjacent string literals are concatenated into one string, automatically!!!
+now we can debug programs by:
+	while( statement ) {
+		if( condition )
+			DEBUG_PRINT;
+		else if
+			...
+		else
+	}
+
+// another example:
+#define PROCESS_LOOP                \
+            for( i = 0; i < 10; i += 1 ){ \
+                  sum += i;               \
+                  if( i > 0 )             \
+                        prod *= i;        \
+}
+
+// make sure that you implement it as function, instead of define, when multiple such thing is needed.
+
+3. Macros
+
+#define name(parameter-list) stuff
+
+// parameter-list is a comma-seprated list of symbols. the symbols in stuff will be literally replacecd by
+// parameter-list;
+
+eg:
+#define SQUARE(x) x * x
+// call: SQUARE( 5 + 1 );
+// result: 5 + 1 * 5 + 1 === 11; ( not 36 !! )
+
+eg:
+#define repeat do
+#define until(x) while( !(x) )
+//call: repeate {
+//		statement;
+//	}until( i > 10 );
+
+4. when macros? when functions?
+// for smaller tasks, macros are faster and easier:
+#define MAX( a, b ) (a) > (b) ? (a) : (b)
+// call: int max = MAX( 3, 5 );
+
+// second reason, function can only take in parameter of one type, while macros can replace almost everyting
+//let's see another example that macros can do, while functions cannot: replacing type:
+****Significant!!!!!****
+#define MALLOC( n, type ) \
+	(type *)malloc( ( n ) * sizeof( type ) )
+
+// call: int *pi = MALLOC( 5, int );
+
+macros do have side effect: page390
+
+5. macro nameing convention
+to distinguish functions/vars, we use CAPS as their names: eg: MAX(a,b), MIN(a, b, c), MEDIAN( array );
+
+6. #undef
+remove the defination:eg:
+#undef MAX
+
+7. command line definations
+//foramt:
+-Dname=stuff
+-Uname
+//eg:
+gcc -DARRAY_SIZE=100 prog.c
+
+8. !!Conditional Compilation
+in order to control whether to compile or not compile a piece of code, we do:
+#if constant-expression
+	statements;
+#elif constant-expression1
+	statements1;
+#else
+	statements2;
+#endif
+
+// constant-expression can either be literals, or, macros
+
+9. If defined
+#ifdef symbol      // equal to:    #if defined( symbol )
+
+#ifndef symbol     // equal to:    #if !defined( symbol )
+// to test whether a symbol is defined or not
+
+10. File inclusion
+01. library inclusion:
+	#include <stdlib.h>
+// searching through /usr/include for stdlib.h
+
+02. local inclusion:
+	#include "filename"
+// look  in  the  current  directory  for  the  file.    If  the  file  is  not  found,  then  the  standard
+// locations are searched as usual
+
+11. absolute path, local path
+In UNIX,
+absolute path:
+/home/fred/C/myProject/declaration.h
+local path:
+./declaration.h
+// ./ means under the current directory
+
+12. nested include...
+sometimes, in order to prevent a code being included more than twice, we do:
+
+#ifndef _HEADERNAME_H
+#define _HEADERNAME_H 1
+/*
+** all the stuffs that you want in the header file
+*/
+#endif
+
+
+****chapter 15****I/O Functions
+1. error reporting
+void perror( char const *message );
+// a message that is not NULL will be printed, followed by ": [error message detected by errno.h]\n"
+
+2. terminating execution
+void exit( int status );
+// status: EXIT_SUCESS / EXIT_FAILURE
+// When  exit  is  finished,  the  program  has  disappeared, so there is nothing to return to
+
+3. stream
+I/O is simply a matter of moving bytes into/out of the program. the stream of bytes, is called STREAM
+buffer: the area of memory that "reading" or "writting" copy data into/out of the program
+testline: 0 or more chars terminating with a newline '\n'
+
+4. files
+FILE is a data structure used to access stream
+for eg, 
+	stdin, stdout, stderr  // pointers to FILE STRUCTURE, defined in stdio
+
+5. overview of I/O
+01. declares a pointer var of type FILE * for each file to be accessed simutaneously. (if only one file, just declare
+    one FILE * file, if 5, declare FILE *file1, FILE *file2, .... )
+02. fopen, to open the file to be accessed
+03. read, write:
+	type of data	input_func	output_func
+	char		getchar		putchar
+	line		gets		puts
+			scanf		printf
+	binary		fread		fwrite
+// however, these functions only work for standard IO: stdin, stdout. How can we use functions that apply to all stream?
+	char		getc/fgetc	putc/fputc
+	line		fgets		fputs
+			fscanf		fprintf
+	binary		fread		fwrite
+// these functions work for any I/O stream
+
+04. fclose, to close the file
+
+6. open stream
+
+FILE *fopen( char const *filename, char const *mode );
+// mode:
+		read		write		append
+text		"r"		"w"		"a"
+binary		"rb"		"wb"		"ab"
+// write will overwrite the original file if existed. append will not, but write starting from the end of that file
+
+**always check if the fopen is successful:
+FILE *input;
+input = fopen( "data.db", "r" );
+if( input == NULL ) {
+	perror( "data.db" );
+	exit( EXIT_FAILURE );
+}
+
+7. close stream
+
+int fclose( FILE *file );
+
+8. character read/write
+int fgetc( FILE *stream );   // for any stream
+int getc( FILE *stream );    // same as fgetc
+int getchar( void );    // just for stdin
+
+/* they all read the next char in a stream, and will return EOF if reaching the end of the file */
+// why return int not char? because EOF is not in the 256 chars. If EOF is in 256 chars, then there is no way to 
+// read after EOF. Thus, EOF is defined as an int
+
+int fputc( int ch, FILE *stream );   // for any stream
+int putc( int ch, FILE *stream );    // for any stream
+int putchar( int ch );      // for stdout only
+
+// keep in mind: getc, putc, getchar, putchar are MACROS!! not functions!!!
+
+9. undoing read/write!!!!!! key-topic
+
+int ungetc( int ch, FILE *stream );
+// sometimes, you read a few more chars and want to go back to some position, returning the char back to stream
+// if more than 1 chars were returned back to stream, they are just like stack, first returned last read
+
+10. unformatted line I/O
+
+char *fgets( char *buffer, int buffer_size, FILE *stream );   // for any streams
+char *gets( char *buffer );  // for stdin only; but this function has been aborted since 2011
+
+int fputs( char const *buffer, FILE *stream );  // for any streams
+int puts( char const *buffer );    // for stdout only
+
+// for fgets, or gets, reading stops when a newline '\n' reached, or (buffer_size - 1) char has been read in.
+// if newline reached, the newline will be attached to the end of buffer;
+// keep in mind: if newline first reached, there is no need to worry that data lost because next call to fgets
+// will start from the next char after newline.
+// if reading a EOF in it (without any other chars), fgets returns a NULL
+eg:
+#define MAX_LINE_LENGTH 1024
+void copylines( FILE *input, FILE *output ) {
+	char buffer[MAX_LINE_LENGTH];
+
+	while( fgets( buffer, MAX_LINE_LENGTH, input ) != NULL ) {
+		fputs( buffer, output );
+	}
+}
+// copy strings from input line by line;
+
+// gets is aborted since 2011;
+// puts( char const *buffer ); is different in that it append a '\n' after the buffer
+
+11. formatted line I/O
+01. scanf family
+int scanf( char const *format, ... );  // the ... here represents for <va_list, va_start, va_arg, va_end>
+int fscanf( FILE *stream, char const *format, ... );   // which means, there can be more than 1 variables
+int sscanf( char const *string, char const *format, ... );
+
+// if the EOF reached, the functions return EOF, otherwise, they return the number of input values were returned
+02. scanf() format code:
+	001.white space: ONE white space matches for many white space chars in the input. AND white spaces
+	    are ignored in scanf(), so, place white space in the format code wisely!!!
+	002.format code: 
+			%[*][width][qualifier]code
+
+	*	causes converted value to be discarded; used to skip past uneeded input
+	width	limits the number of input chars that will be read and converted to a SINGLE value. if not given,
+		chars are read until the next white space char in input.
+		eg: scanf( "%3d", &n ); // meaning, n can has no more than 3 digits!!!!   
+	qualif	h: short
+		l: long
+	code	i: signed int; 0xxx (octal); xxx (decimal); 0xXXX (hex);
+		d: signed int; decimal only
+		u: unsigned int; decimal only
+		o: octal int, unsigned
+		x: hex int, unsigned
+		f: float; // lf: double; Lf: long double;
+		c: char;  // %10c:  10 chars store to an array
+		s: non-white space string
+
+	003.other chars: each time a char (not wspace, not format code) appears, it MUST match the next input char
+	    and will be thus discarded; otherwise, the function returns erroneously.
+	    eg: we want to read (12, 24):
+		int n = scanf( "(%d, %d)", &a, &b );
+		// where a points to 12, b points = 24, n is thus 2 (because we read and converted 2 values )
+
+examples:
+int a, b;
+while( fscanf( input,  "%d %d", &a, &b ) == 2 ) {
+	// processing a, b
+}
+//////////////////////
+nfields = fscanf( input, "%4d %4d %4d %4d", &a, &b, &c, &d );
+// if we put: 12345 6789
+// a == 1234; b = 5; c == 6789; d = undefined; nfields == 3
+
+
+02. printf family
+int printf( char const *format, ... );
+int fprintf( FILE *stream, char const *format, ... );
+int sprintf( char *buffer, char const *format, ... );
+
+// attention, when we call sprintf, we need to make sure in advance that buffer size is enough for written
+
+03. printf() format code
+-	left justy the value: abv***/default is right justify: ***abc
+0	used with the following specifier:
+	0o:  guarantee the value produced begins with a 0
+	0x, 0X: prefix a non-zero result aways with 0x or 0X
+	0e,0E, 0f:  ensures the result always has a decimal point
+len.number+
+	i, d, u, x:  the minimal number of digits to be written; if longer, as it is; it shorter, padded with 0
+	f, e	  :  the number of digits to be printed about the decial point: %.4f: 1.0234
+	s:	     maximum number of chars to be printed.
+len means the total length of the value (including the decimal point):
+	eg: %10.2f:     ******1.00
+	    %5.5s       **abc
+	    %-5s:       abc**
+
+12. binary I/O
+binary I/O most efficient, doesnot lose data. but not readible!
+
+size_t fread( void *buffer, size_t size, size_t count, FILE *stream );
+size_t fwrite( void *buffer, size_t size, size_t count, FILE *stream );
+
+// size: number of bytes in each element of buffer; count: number of elements to be read/written
+// the total number of elements successfully read/write is returned
+
+eg:
+struct VALUE {
+	long  a;
+	float b;
+	char  c[SIZE];
+} values[ARRAY_SIZE];
+   ...
+n_values = fread( values, sizeof( struct VALUE ), ARRAY_SIZE, input_stream );
+// as long as anything can be represented as binary value, they can be read into!!
+
+fwrite( values, sizeof( struct VALUE ), n_values, output_stream );
+// again, attention: binary values are not readible by human!!
+
+13. flushing, seeking
+int fflush( FILE *stream );
+// output whatever unwritten value from stream
+
+long ftell( FILE *stream );    // returns the offset from the beginning of the file to where the file read/write next
+int fseek( FILE *stream, long offset, int from );
+// fseek() changes the postion at which the next read/write occurs
+// stream: the stream to change
+// offset: positive or negative, the offset + from is the position to read/write
+// from: SEEK_SET  // start from beginning
+	 SEEK_CUR  // start from current pos
+	 SEEK_END  // start from end
+// remember, of chose SEEK_SET, the offset must be returned from ftell()
+
+eg1:
+FILE * pFile;
+  pFile = fopen ( "example.txt" , "wb" );
+  fputs ( "This is an apple." , pFile );
+  fseek ( pFile , 9 , SEEK_SET );
+  fputs ( " sam" , pFile );
+  fclose ( pFile );
+  return 0;
+
+eg2:
+int read_random_record( FILE *f, size_t rec_number, StudentInfo *buffer ) {
+	fseek( f, (long)rec_number * sizeof( StudentInfo ), SEEK_SET );
+	return fread( buffer, sizeof( StudentInfo ), 1, f );
+}
+ // for binary I/O, offset is no longer a number, but the bytes!!!!
+
+14. changing the buffering
+
+void setbuf( FILE *stream, char *buf );
+int setvbuf( FILE *stream, char *buf, int mode, size_t size );
+
+15. stream error functions
+
+int feof( FILE *stream );
+int ferror( FILE *stream );
+void clearer( FILE *stream );
+
+16. temporary files
+// use a temp file to store data, after program returns, the temp file is deleted!!!
+FILE *tmpfile( void );
+
+17. rename file, delete file:
+
+int remove( char const *filename );
+int rename( char const *oldname, char const *newname );
+
+
+****chapter 16 **** standard library 
+1. Integer functions
+int abs( int value );
+div_t div( int numerator, int denominator );  // div_t s = div( a, b ); s.quot; s.rem
+
+int rand( void );
+void srand( unsigned int seed );  // srand() can prevent getting the same random value everytime the program ran
+// to make srand() work, we need to plant a seed: 
+// think: what would make seed diffrent, everytime the program opens and runs? ----> time! the current time that
+// the program run!
+// Attention: Two different initializations with the same seed will generate the same succession of results in 
+// subsequent calls to rand.
+eg:
+	srand( (unsigned int)time(NULL) );
+// now generating the random number ranging from 0 to i:
+	rand() % i;
+
+2. string conversion
+// change string into integer:
+int atoi( char const *string );
+
+// change string to long
+long int strtol( char const *string, char **unused, int base );
+
+double atof()
+double strtod( );
+
+3. float functions
+#include <math.h>
+sqrt( float a );
+exp( );
+log( );
+log10( );
+sin( );
+cos( );
+tan( );
+asin( );
+acos( );
+atan( );
+sinh( );
+cosh( );
+tanh( );
+pow( a, b );
+
+double floor( double x );  // returns largest integral number smaller than x
+double ceil( double x );  // returns smallest integral number bigger than x.   eg: ceil( 2.3 ) = 3.0
+
+4. time.h  !!!!
+#include <time.h>
+
+clock_t clock( void );  // Returns the processor time consumed by the program
+//eg:
+clock_t t;
+t = clock();
+/* some statements */
+delt_t = clock() - t;
+//  cast:--> (float)time
+// delt_t is the time that some statements consumed
+
+time_t time( time_t *returned_value );
+
+char *ctime( time_t const *time_value );  // return string format:   "Wed Feb 12 16:06:39 2016\n"
+double difftime( time_t time1, time_t time2 );  // computes the difference timel - time2 and converts the  result to 
+// seconds; note that it returns a double
+
+struct tm *gmtime( time_t const *time_value );   // convert to UTC time;
+struct tm *locatime( time_t const *time_value );  // convert to local time;
+
+// struct tm defination:
+struct tm {
+	int tm_sec;
+	int tm_min;
+	int tm_hour;
+	int tm_mday;
+	int tm_mon;
+	int tm_year;
+	int tm_wday;
+	int tm_yday;
+	int tm_isdst;
+};
+
+size_t strftime( char *string, size_t maxsize, char const *format, struct tm const *tm_ptr );
+// store time pointed by tm_ptr to string according to the format code:
+// page465, Table 16.3
+
+time_t mktime( struct tm *tm_ptr );  // finally, convert tm_ptr back to time_t
+
+
+5. nonlocal jump <setjmp.h>
+int setjmp( jmp_buf state );
+void longjmp( jump_buf state, int value );
+
+6. signal  <signal.h>
+A  signal  represents  an  event  that  can  occur  asynchronously, that is, not synchronized with anything in the
+program s execution
+
+int raise( int sig );
+... and so on...
+
+7. execution environment
+void abort( void );
+void exit( int status );
+void assert( int expression );
+eg:
+assert( value != NULL );
+// If  it  is  false  (zero),  then  a  diagnostic  message  is  printed  to  the  standard  error  and  the  program
+// terminates.
+
+
+8. ****key topic**** --> sorting and searching <stdlib.h>
+
+void qsort( void *base, size_t n_elements, size_t element_size, int (*compare)( void const*, void const* ) );
+// sort the array pointed by base in ascending/descending order, depending on compare defination
+
+void *bsearch( void const *key, void const *base, size_t n_element, size_t element_size, int (*compare)( void*, void* ));
+// after sorted!!, sesarch key and return a pointer to it;
+
+
+//////////////////////////////////////////////////////////////////////
+/**** chapter 17 ****  Classic ADT **** Key Topic of Key Topics!!!!!!/
+////////////////////////////////////////////////////////////////////// 
+list   stack   queue   tree
+3 ways of candidate for implementing ADTs
+--1. static array
+--2. dynamic allocated array
+--3. dynamically linked structure
+
+1. Stacks
+Last In, First Out (LIFO)
+operations:
+	push: add a new value to the tio of the stack
+	pop: removes the topmost value
+	top: return the top element's value
+	is_empty, is_full
+
+2. Implementation of Stack-1: Array Implementation
+_head_file_h_
+#define STACK_TYPE int  // we can define STACK_TYPE as structures or other types later...
+
+void push( STACK_TYPE value );
+void pop( void );
+STACK_TYPE top( void );
+int is_empty( void );
+int is_full( void );
+
+/////////////implementation-array-method///////////////
+( declare static when necessary )
+
+#include "stack.h"
+#include <assert.h>
+
+#define STACK_SIZE 100   // we may change this value if needed
+
+static STACK_TYPE stack[STACK_SIZE];  // static, no users can access the data without employing helper functions
+static int top_element = -1;
+
+void push( STACK_TYPE value ) {
+	assert( !is_full() );
+	top_element += 1;
+	stack[top_element] = value;
+}
+
+void pop( void ) {
+	assert( !is_empty() );
+	top_element -= 1;
+}
+
+STACK_TYPE top( void ) {
+	assert( !is_empty() );
+	return stack[top_element];
+}
+
+int is_empty( void ) {
+	return top_element == -1;
+}
+
+int is_full( void ) {
+	return top_element == STACK_SIZE - 1;
+}
+
+
+3. Impelementation of Stack-2: Dynamic Allocated Arrayed Stack
+#ifndef _STACK_H_
+#define _STACK_H_
+
+void create _stack( size_t size );
+void destroy_stack( void );
+void push( STACK_TYPE value );
+void pop( void );
+STACK_TYPE top( void );
+int is_empty( void );
+int is_full( void );
+
+#endif
+
+//////////stack.c/////////////
+#include <stdio.h>
+#incldue <stdlib.h>
+#include <assert.h>
+#include "stack.h"
+
+static STACK_TYPE *stack;
+static size_t stack_size;
+static int top_element = -1;
+
+void create_stack( size_t size ) {
+	assert( stack_size == 0 );
+	stack_size = size;
+	STACK_TYPE *stack = ( STACK_TYPE * )calloc( stack_stack, sizeof(STACK_TYPE) ) );
+
+	assert( stack != NULL );
+}
+
+void destroy_stack( void ) {
+	assert( stack_size > 0 );
+	stack_size = 0;
+	free( stack );
+	stack = NULL;
+}
+
+void push( STACK_TYPE value ) {
+	assert( !is_full() );
+	top_element++;
+	stack[top_element] = value;
+}
+
+void pop( void ) {
+	assert( !is_empty() );
+	top_element--;
+}
+
+STACK_TYPE top( void ) {
+	assert( !is_empty() );
+	return stack[top_element];
+}
+
+int is_empty( void ) {
+	return top_element == -1;
+}
+
+int is_full( void ) {
+	return top_element == stack_size - 1;
+}
+
+
+4. Implementation of Stack-3: Linked Stack, Dynamic
+(since only the top element in a stack is accessible, so Singly linked List works perfectly for the implementation)
+
+#include "stack.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <assert.h>
+
+typedef struct STACK_NODE {
+	STACK_TYPE value;
+	struct STACK_NODE *next;
+} StackNode;
+
+static StackNode *stack;   /* private member data */
+
+void create_stack( void ) {
+	/* there is no need to create a head node; pop will process a generic case */
+}
+
+void destroy_stack( void ) {
+	while( !is_empty() )
+		pop();
+}
+
+void push( STACK_TYPE value ) {
+	StackNode *new_node;
+	new_node = ( StackNode * )malloc( sizeof( StackNode ) );
+	assert( new_node != NULL );
+
+	new_node->value = value;
+	new_node->next = stack;
+	stack = new_node;  /* pointer-stack always points to the head of list */
+}
+
+void pop( void ) {
+	StackNode *first_node;
+	assert( !is_empty() );
+	first_node = stack;
+	stack = stack->next;
+	free( first_node );
+	first_node = NULL;
+}
+
+STACK_TYPE top( void ) {
+	assert( !is_empty() );
+	return stack->value;
+}
+
+int is_empty( void ) {
+	return stack == NULL;
+}
+
+/* there is nothing like "is_full()", because the list is never full */
+
+
+5. Queues
+A queue is a structure that supports First In First Out (FIFO)
+there is no universal way about how to implement queue, not like stacks which insertion occurs at the head, deletion
+occurs at the head too, queues, may take any ways: here, our preference is to insert at the rear, remove from the front
+
+/* first, let's look at the interface: */
+#include <stdlib.h>
+#define QUEUE_TYPE int
+
+void create_queue( size_t size );
+void destroy_queue( void );
+void enqueue( QUEUE_TYPE value );
+void dequeue( void );
+QUEUE_TYPE first( void );
+int is_empty( void );
+int is_full( void );
+//////////_QUEUE_H_//////////////
+
+6. Implementing Queues-1 Arrayed Queue
+two pointers are needed, front --- rear; meanwhile, we need to implement a circular array
+however, since it's circular, we can't compare front and rear to tell if a queue is full or empty
+
+So I ask, how would you tell if a queue is empty? full? After all, the location of rear or front is always
+altering while inserting or deleting.
+001. the bottom line is, when the queue has only one element, the index of front and rear points to the same loc
+002. secondly, an insertion increases the index of rear by 1. After 1 element is inserted, rear and front points to the
+     same value: which means, when the queue is empty, rear is 1 smaller than front:
+	( rear + 1 ) % QUEUE_SIZE == front
+     similarly, when queue is full, we have:
+	( rear + 2 ) % QUEUE_SIZE == front;
+
+And remember the rule, we are using a circular array to store an queue of size QUEUE_SIZE, which means we gotta save 
+next insertion to the very beginning of the queue if queue[QUEUE_SIZE - 1] is occupied:
+	rear += 1;  // insert a new value
+	if( rear >= QUEUE_SIZE )
+		rear = 0;		// =====> euqavelent to:=====> rear = (rear + 1) % QUEUE_SIZE;
+					// I.E., if rear < QUEUE_SIZE, ( rear + 1 ) % QUEUE_SIZE == rear + 1;
+						if rear > QUEUE_SIZE, (rear + 1) % QUEUE_SIZE == rear + 1 - n*QUEUE_SIZE
+
+#include "queue.h"
+#include <stdio.h>
+#include <assert.h>
+
+#define QUEUE_SIZE 100
+#define ARRAY_SIZE (QUEUE_SIZE + 1)
+
+static QUEUE_TYPE queue[ARRAY_SIZE];
+static size_t front = 1;
+static size_t rear = 0;
+
+void enqueue( QUEUE_TYPE value ) {
+	assert( !is_full() );
+	rear = ( rear + 1 ) % ARRAY_SIZE;
+	queue[rear] = value;
+}
+
+void dequeue( void ) {
+	assert( !is_empty() );
+	front = ( front + 1 ) % ARRAY_SIZE;
+}
+
+int is_empty( void ) {
+	return ( rear + 1 ) % ARRAY_SIZE == front;
+}
+
+int is_full( void ) {
+	return ( rear + 2 ) % ARRAY_SIZE == front;
+}
+
+queue - dynamic allocated array, dynamic linked queue, are analogous to those implemented for stacks
+
+
+7. Trees!!!
+001. Specifically, we are talking about Binary Search Tree for prodigm.
+	parent
+	  |
+   ---------------
+  |	  	  |
+left 		right
+
+rule: The  value  in  each  node  is  greater  than  all  of  the  values  in  its  left subtree and less than all of
+the values in its right subtree
+
+root: the topmost node, which is the only node that does not have parents
+leaf: a node without children
+
+basic algorithm when inserting a new value:
+if tree is empty
+	root = new_value;
+if value > parent
+	parent->right = new_value;
+otherwise
+	parent->left = new_value;
+
+basic algorithm when deleting a value is more difficult:
+1. delete a node with no children
+	direct delete it, simple;
+2. delete a node with single children
+	the single children just inherit this node;
+3. delete a node with both children
+	difficult: one way to solve this is to have the largest node in its left-subtree deleted and replace it with the
+node
+
+
+002. search a binary search tree
+if tree is empty
+	no such value
+otherwise
+	if root contains the value
+		return root
+	otherwise
+		if value is less than root
+			search left-subtree
+		otherwise
+			search right-subtree
+
+
+003. traverse trees, i.e., examining all the nodes of a tree
+there are 4 orders which could be used to traverse BST:
+    pre-order, post-order, in-order, breadth-first
+
+pre-order: recursively visit parent--->left(subtree)---->right(subtree)
+
+post-order: recursively visit left(subtree---->right(subtree)----->parent
+
+in-order: recursively visit left(subtree)--->parent--->right(subtree)
+
+breadth-first: examine from leftmost to rightmost level by level
+
+
+8. BST Implementation
+////interface/////
+#define TREE_TYPE int
+void insert( TREE_TYPE value );
+TREE_TYPE *find( TREE_TYPE value );
+void pre_order_traverse( void (*callback)( TREE_TYPE value ) );
+/* the argument is a pointer to a callback function that will be called for each node in the tree */
+
+.801--->arrayed BST
+0-based subscript rule:
+the parent of node N: (N + 1)/2 - 1
+the left child of Node N:  2N + 1
+the right child of Node N: 2N + 2
+
+#include "tree.h"
+#include <assert.h>
+#include <stdio.h>
+
+#define TREE_SIZE 100
+#define ARRAY_SIZE (TREE_SIZE + 1)  // discard the first element, we start with the second
+
+static TREE_TYPE tree[ARRAY_SIZE];
+
+/* given current node's subscript, return the subscript of the left child of this node */
+static int left_child( int current ) {
+	return current * 2;
+}
+
+static int right_child( int current ) {
+	return current * 2 + 1;
+}
+
+void insert( TREE_TYPE value ) {
+	int current;  // used to store the currently visited node's subscript
+	assert( value != 0 );  // we use value 0 to indicate a non-exist node;
+
+	current = 1;
+	while( tree[current] != 0 ) {
+		if( value < tree[current] )
+			current = left_child( current );
+		else if( value > tree[current] )
+			current = right_child( current );
+		else
+			abort();  // we don't allow existing value to be inserted!!
+
+		assert( current < ARRAY_SIZE );
+	}
+	tree[current] = value;
+}
+
+TREE_TYPE *find( TREE_TYPE value ) {
+	int current;
+	current = 1;  // start with the root
+
+	while( current < ARRAY_SIZE && tree[current] != value )
+		currrent = value < tree[current] ? left_child( current ) : right_child( current );
+
+	return tree[current] == value ? tree + current : NULL;
+}
+
+static void do_pre_order_traverse( int current, void (*callback)( TREE_TYPE value ) ) {
+	// make sure to think of recursion first
+	if( current < ARRAY_SIZE && tree[current] != 0 ) {
+		callback( tree[current] );
+		do_pre_order_traverse( left_child( current ), callback( tree[left_child( current )] );
+		do_pre_order_traverse( right_child( current ), callback( tree[right_child( current )] );
+	}
+}
+
+void pre_order_traverse( void (*callback)( TREE_TYPE value ) ) {
+	do_pre_order_traverses( 1, callback );
+}
+
+
+.802 ***** Doubly-Linked-List BST
+#include "tree.h"
+#include <assert.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+typedef struct TREE_NODE {
+	TREE_TYPE value;
+	struct TREE_NODE *left_child;
+	struct TREE_NODE *right_child;
+} TreeNode;
+
+static TreeNode *tree;
+
+void insert( TREE_TYPE value ) {
+	TreeNode *current;
+	TreeNode **link;
+
+	link = &tree;
+
+	while( ( current  = *link ) != NULL ) {
+		if( value < current->value )
+			link = &current->left_child;
+		else
+			assert( value - current->value );   // make sure we DON'T have duplicated value
+			link = &current->right_child;
+	}
+
+	current = ( TreeNode * )malloc( sizeof( TreeNode ) );
+	assert( current != NULL );
+	current->value = value;
+	current->left_child = current->right_child = NULL;
+
+	return current;
+}
+
+TREE_TYPE *find( TREE_TYPE value ) {
+	TreeNode *current = tree;
+
+	while( current != NULL && current->value != value )
+		current = value < current->value ? current->left_child : current->right_child;
+
+	return current;
+}
+
+static void do_pre_order_traverse( TreeNode *current, void (*callback)( TREE_TYPE value ) ) {
+	if( current != NULL ) {
+		callback( current->value );
+		do_pre_order_traverse( current->left_child, callback );
+		do_pre_order_traverse( current->right_child, callback );
+	}
+}
+
+void pre_order_traverse( void (*callback)( TREE_TYPE value ) ) {
+	do_pre_order_traverse( tree, callback );
+}
+
+
+9. Improvements in Implementation
+901. having more than one stack
+902. having more than one type
+	solution1: use #define to define functions for different types
+	solution2: use void * to replace any type, but with danger of course
+903. name clashes
+
+So, ADTs in Standard Library of C?
+NOOOOO! because of the 901, 902, 903 problems as mentioned. but, we can try to do it by making use of #define:
+
+/* pay attention: in preprocessing part, ## means operator for concatenation!!! */
+so, a generic stack is like:
+
+#define GENERIC_STACK( STACK_TYPE, SUFFIX, STACK_SIZE )  \
+	static STACK_TYPE stack##SUFFIX[STACK_SIZE];     \
+	static int top_element##SFFUIX = -1;             \
+	                                                 \
+	int is_empty##SUFFIX( void ) {    	         \
+		return top_element##SUFFIX == -1;	 \
+	}						 \
+							 \
+	int is_full##SUFFIX( void ) {			 \
+		return top_element##SUFFIX == STACK_SIZE - 1; \
+	}						 \
+							 \
+	void push##SUFFIX( void ) {			 \
+							 \
+		...
+	}
+
+	...
+							 \
+
+( backslahs '\' means a continued line )
+
+so, when we call the #defined functions, we do:
+
+GENERIC_STACK( int, _int, 10 );
+GENERIC_STACK( float, _float, 5 );
+
+int main() {
+	push_int( 5 );
+	push_float( 23.5 );
+....
+....
+	return EXIT_SUCCESS;
+}
+
